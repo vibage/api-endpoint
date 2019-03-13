@@ -1,9 +1,6 @@
 import * as bodyParser from "body-parser";
-import express, { Request, Response } from "express";
-import { createLogger } from "bunyan";
+import express from "express";
 export const app = express();
-
-const log = createLogger({ name: "App"});
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -17,13 +14,6 @@ app.use((_, res, next) => {
   next();
 });
 
-import "./spotify/routes";
-import "./smart_home/routes";
-
-app.get("/ping", (_: Request, res: Response) => {
-  log.info("pong " + new Date().getTime());
-  res.send("pong");
-});
-
+import "./routes";
 import "./db";
 
