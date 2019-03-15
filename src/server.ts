@@ -18,7 +18,7 @@ io.on("connection", socket => {
   socket.on("myId", (id: any) => {
     log.info(`Join Room ${id}`);
     socket.join(id);
-  })
+  });
 });
 
 const port = 3000;

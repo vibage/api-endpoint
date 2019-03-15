@@ -17,25 +17,24 @@ app.get("/spotify/nextTrack/:id", TrackController.nextTrack);
 app.post("/spotify/play", PlayerController.playPlaylist);
 app.get("/spotify/player/:id", PlayerController.getPlayer);
 
+// const allowedExt = [
+//   '.js',
+//   '.ico',
+//   '.css',
+//   '.png',
+//   '.jpg',
+//   '.woff2',
+//   '.woff',
+//   '.ttf',
+//   '.svg',
+// ];
 
 
-const allowedExt = [
-  '.js',
-  '.ico',
-  '.css',
-  '.png',
-  '.jpg',
-  '.woff2',
-  '.woff',
-  '.ttf',
-  '.svg',
-];
-
-// public route stuff
-app.get('*', (req: Request, res: Response) => {
-  if (allowedExt.filter(ext => req.url.indexOf(ext) > 0).length > 0) {
-    res.sendFile(path.resolve(`public/${req.url}`));
-  } else {
-    res.sendFile(path.resolve('public/index.html'));
-  }
-});
+// // public route stuff
+// app.get('*', (req: Request, res: Response) => {
+//   if (allowedExt.filter(ext => req.url.indexOf(ext) > 0).length > 0) {
+//     res.sendFile(path.resolve(`public/${req.url}`));
+//   } else {
+//     res.sendFile(path.resolve('public/index.html'));
+//   }
+// });

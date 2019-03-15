@@ -72,13 +72,12 @@ export async function removeTrack(userId: string, uri: string) {
     },
     method: "DELETE"
   })
-  const data = removeRes.json();
-  log.info(JSON.stringify(data));
+  const data = await removeRes.json() as ISpotifyTrackModel[];
 
   // remove from database
   await TrackModel.removeTrack(userId, uri);
 
-  await sendAllTracks(userId);
+  await sendAllTracks(userId, data);
 
 }
 
@@ -112,6 +111,5 @@ export async function sendAllTracks(userId: string, tracks?: ISpotifyTrackModel[
       resolve(tracks);
     }
   });
-  console.log(allTracks)
   io.to(userId).emit("tracks", allTracks);
 }
