@@ -4,24 +4,30 @@ import * as UserController from "./users/controller";
 import fetch from "node-fetch";
 import { ISpotifyUserModel } from "./def/spotifyUser";
 
+// Dannyiel Voos came up with name (ish)
+
 const log =  createLogger({ name: "Utils" })
 
 async function sendRequest(route: string, method: string, token: string, payload?: Object) {
 
-  const body = method === "GET" ? {} : { body: JSON.stringify(payload) };
+  const body = method === "GET" ? {} : { body: JSON.stringify(payload), method };
 
-  const res = await fetch(`https://api.spotify.com${route}`, {
+  const options = {
     ...body,
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    method
-  });
+  }
+
+  log.info({ options });
+
+
+  const res = await fetch(`https://api.spotify.com${route}`, options);
 
   if (res.status === 204) {
     return {
-      status: "ok"
+      status: "204"
     };
   }
   const data = await res.json();

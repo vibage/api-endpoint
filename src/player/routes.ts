@@ -12,6 +12,12 @@ export async function playPlaylist(req: Request, res: Response) {
   res.send("done");
 }
 
+export async function getPlayer(req: Request, res: Response) {
+  const { id } = req.params;
+  const data = await PlayerController.getPlayer(id);
+  res.send(data);
+}
+
 export async function play(req: Request, res: Response) {
   const { id } = req.body;
   try {

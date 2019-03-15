@@ -15,6 +15,8 @@ app.get("/spotify/getTracks/:id", TrackController.getTracks);
 app.get("/spotify/nextTrack/:id", TrackController.nextTrack);
 
 app.post("/spotify/play", PlayerController.playPlaylist);
+app.get("/spotify/player/:id", PlayerController.getPlayer);
+
 
 
 const allowedExt = [

@@ -1,12 +1,26 @@
 import { app } from "./app";
 import { createLogger } from "bunyan";
+import socketIO from "socket.io";
+import http from "http";
+
+export const server = new http.Server(app);
 
 const log = createLogger({
   name: "Server"
 })
 
+export const io = socketIO(server);
+
+// io.origins('*:*');
+
+io.on("connection", socket => {
+  log.info("Connection");
+  socket.on("myId", (id: any) => {
+    log.info(`Join Room ${id}`);
+    socket.join(id);
+  })
+});
+
 const port = 3000;
 
-const server = app.listen(port, () => log.info(`Listening on port ${port}!`));
-
-export default server;
+server.listen(port, () => log.info(`Listening on port ${port}!`));

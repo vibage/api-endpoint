@@ -16,4 +16,3 @@ app.use((_, res, next) => {
 
 import "./routes";
 import "./db";
-

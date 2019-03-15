@@ -3,6 +3,8 @@ import fetch from "node-fetch";
 import * as UserModel from "../users/model";
 import * as TrackModel from "../tracks/model";
 import { makeApiRequest } from "../utils";
+import { ISpotifyTrackModel } from "../def/spotifyTrack";
+import { io } from "../server";
 
 const log = createLogger({
   name: "Track"
@@ -41,6 +43,9 @@ export async function addTrack(userId: string, trackId: string, ipAddress: strin
 
   // add track to database
   const track = await TrackModel.addTrack(userId, trackData, ipAddress);
+
+  // send tracks via socket
+  await sendAllTracks(userId);
   return track;
 }
 
@@ -73,6 +78,8 @@ export async function removeTrack(userId: string, uri: string) {
   // remove from database
   await TrackModel.removeTrack(userId, uri);
 
+  await sendAllTracks(userId);
+
 }
 
 export async function getTracks(userId: string) {
@@ -91,5 +98,20 @@ export async function nextTrack(userId: string) {
     uris:[tracks[1].uri]
   });
 
+  await sendAllTracks(userId);
+
   return data;
+}
+
+export async function sendAllTracks(userId: string, tracks?: ISpotifyTrackModel[]){
+  const allTracks = await new Promise(async (resolve, rej) => {
+    if (tracks) {
+      resolve(tracks)
+    } else {
+      const tracks = await getTracks(userId);
+      resolve(tracks);
+    }
+  });
+  console.log(allTracks)
+  io.to(userId).emit("tracks", allTracks);
 }

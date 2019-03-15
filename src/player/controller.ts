@@ -8,7 +8,7 @@ const log = createLogger({
 })
 
 export async function playPlaylist(userId: string) {
-  log.info(`Playing playlist: userId=${userId}`);
+  log.info(`Playing Fizzle: userId=${userId}`);
 
   const user = await UserModel.getUser(userId);
 
@@ -19,13 +19,19 @@ export async function playPlaylist(userId: string) {
 
   const tracks = await TrackController.getTracks(userId);
 
-  log.info(tracks);
-
   const payload = {
     uris: [ tracks[0].uri ],
   }
 
   const data = await makeApiRequest("/v1/me/player/play", "PUT", user, payload);
+
+  return data;
+}
+
+export async function getPlayer(userId: string) {
+  log.info(`Player info: userId=${userId}`);
+
+  const data = await makeApiRequest("/v1/me/player", "GET", userId);
 
   return data;
 }
