@@ -96,3 +96,7 @@ export async function getAuthToken(userId: string) {
 
   return user.accessToken;
 }
+
+export function getNearbyUsers() {
+  return UserModel.getAllUsers();
+}

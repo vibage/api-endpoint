@@ -17,6 +17,10 @@ export function getUser (userId: string) {
   return SpotifyUser.findById(userId);
 }
 
+export function getAllUsers () {
+  return SpotifyUser.find({});
+}
+
 export async function setTokens(id: string, aToken: string) {
   const user = await SpotifyUser.findByIdAndUpdate(id, {
     accessToken: aToken,

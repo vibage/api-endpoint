@@ -31,6 +31,7 @@ async function sendRequest(route: string, method: string, token: string, payload
     };
   }
   const data = await res.json();
+
   return data;
 }
 

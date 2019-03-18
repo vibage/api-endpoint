@@ -39,3 +39,8 @@ export async function getToken(req: Request, res: Response) {
   }
 }
 
+export async function getNearbyUsers(req: Request, res: Response) {
+  const users = await controller.getNearbyUsers();
+  res.send(users);
+}
+

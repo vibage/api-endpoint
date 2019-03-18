@@ -64,7 +64,7 @@ export async function removeTrack(userId: string, uri: string) {
   });
 
   // remove from playlist
-  const removeRes = await fetch(`https://api.spotify.com/v1/playlists/${user.playlistId}/tracks`, {
+  await fetch(`https://api.spotify.com/v1/playlists/${user.playlistId}/tracks`, {
     body: payload,
     headers: {
       Authorization: `Bearer ${user.accessToken}`,
@@ -72,12 +72,11 @@ export async function removeTrack(userId: string, uri: string) {
     },
     method: "DELETE"
   })
-  const data = await removeRes.json() as ISpotifyTrackModel[];
 
   // remove from database
   await TrackModel.removeTrack(userId, uri);
 
-  await sendAllTracks(userId, data);
+  await sendAllTracks(userId);
 
 }
 
@@ -87,17 +86,21 @@ export async function getTracks(userId: string) {
 }
 
 export async function nextTrack(userId: string) {
+  log.info("Next Track");
   const tracks = await getTracks(userId);
 
   // remove the first track
   await removeTrack(userId, tracks[0].uri);
 
   //play the next track
-  const data = await makeApiRequest("/v1/me/player/play", "PUT", userId, {
+  await makeApiRequest("/v1/me/player/play", "PUT", userId, {
     uris:[tracks[1].uri]
   });
 
   await sendAllTracks(userId);
+
+  // get player context to send to user (probably hasn't updated yet)
+  const data = await makeApiRequest("/v1/me", "GET", userId);
 
   return data;
 }

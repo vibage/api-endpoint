@@ -5,9 +5,9 @@ import * as TrackController from "../tracks/controller";
 
 const log = createLogger({
   name: "Player"
-})
+});
 
-export async function playPlaylist(userId: string) {
+export async function startQueue(userId: string) {
   log.info(`Playing Fizzle: userId=${userId}`);
 
   const user = await UserModel.getUser(userId);
@@ -19,9 +19,12 @@ export async function playPlaylist(userId: string) {
 
   const tracks = await TrackController.getTracks(userId);
 
+  if (tracks.length === 0) throw new Error("Queue empty");
+
   const payload = {
     uris: [ tracks[0].uri ],
   }
+
 
   const data = await makeApiRequest("/v1/me/player/play", "PUT", user, payload);
 
