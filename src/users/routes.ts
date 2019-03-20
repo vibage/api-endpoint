@@ -1,16 +1,16 @@
-import * as controller from "./controller";
-import { Response, Request } from "express";
 import { createLogger } from "bunyan";
+import { Request, Response } from "express";
+import * as controller from "./controller";
 
 const log = createLogger({
-  name: "Users"
-})
+  name: "Users",
+});
 
 export async function authorize(req: Request, res: Response) {
   const { code } = req.query;
   try {
     const user = await controller.requestAuthToken(code);
-    res.status(200).send(user)
+    res.status(200).send(user);
   } catch (err) {
     log.error({ err });
     res.status(400).send(err);
@@ -43,4 +43,3 @@ export async function getNearbyUsers(req: Request, res: Response) {
   const users = await controller.getNearbyUsers();
   res.send(users);
 }
-

@@ -1,15 +1,15 @@
+import { createLogger } from "bunyan";
 import { Request, Response } from "express";
 import * as PlayerController from "./controller";
-import { createLogger } from "bunyan";
 
 const log = createLogger({
-  name: "Player"
-})
+  name: "Player",
+});
 
 export async function startQueue(req: Request, res: Response) {
   const { id } = req.body;
   await PlayerController.startQueue(id);
-  res.send("done");
+  res.send({ status: "done" });
 }
 
 export async function getPlayer(req: Request, res: Response) {
@@ -23,7 +23,7 @@ export async function play(req: Request, res: Response) {
   try {
     await PlayerController.play(id);
     res.status(200).send({ status: "done" });
-  } catch(err) {
+  } catch (err) {
     log.error({ err });
     res.status(200).send(err);
   }
@@ -34,7 +34,7 @@ export async function pause(req: Request, res: Response) {
   try {
     await PlayerController.pause(id);
     res.status(200).send({ status: "done" });
-  } catch(err) {
+  } catch (err) {
     log.error({ err });
     res.status(200).send(err);
   }

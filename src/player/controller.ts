@@ -1,10 +1,10 @@
-import * as UserModel from "../users/model";
 import { createLogger } from "bunyan";
-import { makeApiRequest } from "../utils";
 import * as TrackController from "../tracks/controller";
+import * as UserModel from "../users/model";
+import { makeApiRequest } from "../utils";
 
 const log = createLogger({
-  name: "Player"
+  name: "Player",
 });
 
 export async function startQueue(userId: string) {
@@ -12,19 +12,20 @@ export async function startQueue(userId: string) {
 
   const user = await UserModel.getUser(userId);
 
-  if (!user) return false;
+  if (!user) { return false; }
 
-  await makeApiRequest("/v1/me/player/repeat", "PUT", user, {state: "off"});
-  await makeApiRequest("/v1/me/player/shuffle", "PUT", user, {state: "false"});
+  await makeApiRequest("/v1/me/player/repeat", "PUT", user, { state: "off" });
+  await makeApiRequest("/v1/me/player/shuffle", "PUT", user, {
+    state: "false",
+  });
 
   const tracks = await TrackController.getTracks(userId);
 
-  if (tracks.length === 0) throw new Error("Queue empty");
+  if (tracks.length === 0) { throw new Error("Queue empty"); }
 
   const payload = {
-    uris: [ tracks[0].uri ],
-  }
-
+    uris: [tracks[0].uri],
+  };
 
   const data = await makeApiRequest("/v1/me/player/play", "PUT", user, payload);
 

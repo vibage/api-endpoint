@@ -1,6 +1,6 @@
-import { Document, Schema, Model, model } from "mongoose";
+import { Document, Model, model, Schema } from "mongoose";
 
-export interface ISpotifyUserModel extends Document {
+export interface IUserModel extends Document {
   name: string;
   spotifyId: string;
   accessToken: string;
@@ -9,7 +9,7 @@ export interface ISpotifyUserModel extends Document {
   playlistURI: string;
 }
 
-export var SpotifyUserSchema: Schema = new Schema({
+export const UserSchema: Schema = new Schema({
   name: String,
   accessToken: String,
   refreshToken: String,
@@ -18,7 +18,7 @@ export var SpotifyUserSchema: Schema = new Schema({
   playlistURI: String,
 });
 
-export const SpotifyUser: Model<ISpotifyUserModel> = model<ISpotifyUserModel>(
+export const SpotifyUser: Model<IUserModel> = model<IUserModel>(
   "SpotifyUser",
-  SpotifyUserSchema
+  UserSchema,
 );

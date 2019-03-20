@@ -1,20 +1,20 @@
-import * as UserModel from "./model";
-import fetch from "node-fetch";
 import { createLogger } from "bunyan";
+import fetch from "node-fetch";
 import { makeApiRequest } from "../utils";
+import * as UserModel from "./model";
 
 const log = createLogger({
-  name: "Users"
-})
+  name: "Users",
+});
 
 export async function requestAuthToken(code: string) {
   log.info(`Authorizing: code=${code}`);
 
-  const redirect_uri = encodeURIComponent(
+  const redirectUri = encodeURIComponent(
     "https://tgt101.com/650Panel/login.html",
   );
   const response = await fetch("https://accounts.spotify.com/api/token", {
-    body: `grant_type=authorization_code&code=${code}&redirect_uri=${redirect_uri}&client_id=a7e126eaee8b4c6f9e689a8b3b15efa5&client_secret=7de3ad7d3a6a4669926a627b5c4588a8`,
+    body: `grant_type=authorization_code&code=${code}&redirect_uri=${redirectUri}&client_id=a7e126eaee8b4c6f9e689a8b3b15efa5&client_secret=7de3ad7d3a6a4669926a627b5c4588a8`,
     headers: {
       "Cache-Control": "no-cache",
       "Content-Type": "application/x-www-form-urlencoded",
@@ -35,17 +35,21 @@ export async function requestAuthToken(code: string) {
   const playlistData = {
     name: "Fizzle List",
     public: false,
-    description: "Playlist used to see what songs fizzle is playing. Please do not change anything with this"
-  }
+    description:
+      "Playlist used to see what songs fizzle is playing. Please do not change anything with this",
+  };
 
-  const playlistRes = await fetch(`https://api.spotify.com/v1/users/${userData.id}/playlists`, {
-    body: JSON.stringify(playlistData),
-    headers: {
-      Authorization: `Bearer ${result.access_token}`,
-      "Content-Type": "application/json",
+  const playlistRes = await fetch(
+    `https://api.spotify.com/v1/users/${userData.id}/playlists`,
+    {
+      body: JSON.stringify(playlistData),
+      headers: {
+        "Authorization": `Bearer ${result.access_token}`,
+        "Content-Type": "application/json",
+      },
+      method: "POST",
     },
-    method: "POST"
-  });
+  );
   const playlistInfo = await playlistRes.json();
 
   // create the user
@@ -55,7 +59,7 @@ export async function requestAuthToken(code: string) {
     result.access_token,
     result.refresh_token,
     playlistInfo.id,
-    playlistInfo.uri
+    playlistInfo.uri,
   );
 
   return user;
@@ -66,10 +70,14 @@ export async function refreshToken(userId: string) {
 
   const user = await UserModel.getUser(userId);
 
-  if (!user) throw new Error("User not found");
+  if (!user) {
+    throw new Error("User not found");
+  }
 
   const response = await fetch("https://accounts.spotify.com/api/token", {
-    body: `grant_type=refresh_token&refresh_token=${user.refreshToken}&client_id=a7e126eaee8b4c6f9e689a8b3b15efa5&client_secret=7de3ad7d3a6a4669926a627b5c4588a8`,
+    body: `grant_type=refresh_token&refresh_token=${
+      user.refreshToken
+    }&client_id=a7e126eaee8b4c6f9e689a8b3b15efa5&client_secret=7de3ad7d3a6a4669926a627b5c4588a8`,
     headers: {
       "Cache-Control": "no-cache",
       "Content-Type": "application/x-www-form-urlencoded",
@@ -90,7 +98,9 @@ export async function getAuthToken(userId: string) {
   // perform some kind of authorization here
   const user = await UserModel.getUser(userId);
 
-  if (!user) throw new Error("User does not exist");
+  if (!user) {
+    throw new Error("User does not exist");
+  }
 
   // make sure the token still works
 

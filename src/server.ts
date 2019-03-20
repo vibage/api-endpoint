@@ -1,19 +1,19 @@
-import { app } from "./app";
 import { createLogger } from "bunyan";
-import socketIO from "socket.io";
 import http from "http";
+import socketIO from "socket.io";
+import { app } from "./app";
 
 export const server = new http.Server(app);
 
 const log = createLogger({
-  name: "Server"
-})
+  name: "Server",
+});
 
 export const io = socketIO(server);
 
 // io.origins('*:*');
 
-io.on("connection", socket => {
+io.on("connection", (socket) => {
   log.info("Connection");
   socket.on("myId", (id: any) => {
     log.info(`Join Room ${id}`);

@@ -1,4 +1,5 @@
 import * as bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 import express from "express";
 export const app = express();
 
@@ -8,11 +9,12 @@ app.use((_, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
     "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
+    "Origin, X-Requested-With, Content-Type, Accept",
   );
-  res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
+  res.header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS");
   next();
 });
+app.use(cookieParser());
 
-import "./routes";
 import "./db";
+import "./routes";

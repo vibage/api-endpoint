@@ -1,23 +1,30 @@
-import { SpotifyUser } from "../def/spotifyUser";
+import { SpotifyUser } from "../def/user";
 
-export async function createUser (name: string, spotifyId: string, aToken: string, rToken: string, playlistId: string, playlistURI: string) {
+export async function createUser(
+  name: string,
+  spotifyId: string,
+  aToken: string,
+  rToken: string,
+  playlistId: string,
+  playlistURI: string,
+) {
   const user = new SpotifyUser({
     name,
     spotifyId,
     accessToken: aToken,
     refreshToken: rToken,
     playlistId,
-    playlistURI
+    playlistURI,
   });
   await user.save();
   return user;
 }
 
-export function getUser (userId: string) {
+export function getUser(userId: string) {
   return SpotifyUser.findById(userId);
 }
 
-export function getAllUsers () {
+export function getAllUsers() {
   return SpotifyUser.find({});
 }
 
@@ -36,4 +43,3 @@ export async function getAccessToken(id: string) {
     throw new Error("User not found");
   }
 }
-
