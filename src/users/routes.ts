@@ -43,3 +43,10 @@ export async function getNearbyUsers(req: Request, res: Response) {
   const users = await controller.getNearbyUsers();
   res.send(users);
 }
+
+export async function searchSpotify(req: Request, res: Response) {
+  const { id } = req.params;
+  const { query } = req.query;
+  const data = await controller.searchSpotify(id, query);
+  res.send(data);
+}

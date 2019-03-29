@@ -1,4 +1,5 @@
 import { createLogger } from "bunyan";
+import { io } from "../server";
 import * as TrackController from "../tracks/controller";
 import * as UserModel from "../users/model";
 import { makeApiRequest } from "../utils";
@@ -7,12 +8,14 @@ const log = createLogger({
   name: "Player",
 });
 
-export async function startQueue(userId: string) {
+export async function startQueue(userId: string, deviceId: string) {
   log.info(`Playing Fizzle: userId=${userId}`);
 
   const user = await UserModel.getUser(userId);
 
-  if (!user) { return false; }
+  if (!user) {
+    return false;
+  }
 
   await makeApiRequest("/v1/me/player/repeat", "PUT", user, { state: "off" });
   await makeApiRequest("/v1/me/player/shuffle", "PUT", user, {
@@ -21,13 +24,20 @@ export async function startQueue(userId: string) {
 
   const tracks = await TrackController.getTracks(userId);
 
-  if (tracks.length === 0) { throw new Error("Queue empty"); }
+  if (tracks.length === 0) {
+    throw new Error("Queue empty");
+  }
 
   const payload = {
     uris: [tracks[0].uri],
   };
 
-  const data = await makeApiRequest("/v1/me/player/play", "PUT", user, payload);
+  const data = await makeApiRequest(
+    `/v1/me/player/play?device_id=${deviceId}`,
+    "PUT",
+    user,
+    payload,
+  );
 
   return data;
 }
@@ -35,9 +45,21 @@ export async function startQueue(userId: string) {
 export async function getPlayer(userId: string) {
   log.info(`Player info: userId=${userId}`);
 
-  const data = await makeApiRequest("/v1/me/player", "GET", userId);
+  const user = await UserModel.getUser(userId);
+  if (!user) {
+    return;
+  }
 
-  return data;
+  io.to(userId).emit("player", JSON.parse(user.player));
+}
+
+export async function sendPlayer(userId: string, player: any) {
+  log.info("Sending Player", userId);
+  UserModel.setPlayerState(userId, JSON.stringify(player));
+  io.to(userId).emit("player", player);
+  return {
+    status: "Done",
+  };
 }
 
 export async function play(userId: string) {

@@ -14,7 +14,9 @@ export async function requestAuthToken(code: string) {
     "https://tgt101.com/650Panel/login.html",
   );
   const response = await fetch("https://accounts.spotify.com/api/token", {
-    body: `grant_type=authorization_code&code=${code}&redirect_uri=${redirectUri}&client_id=a7e126eaee8b4c6f9e689a8b3b15efa5&client_secret=7de3ad7d3a6a4669926a627b5c4588a8`,
+    body:
+      `grant_type=authorization_code&code=${code}&redirect_uri=${redirectUri}` +
+      `&client_id=a7e126eaee8b4c6f9e689a8b3b15efa5&client_secret=7de3ad7d3a6a4669926a627b5c4588a8`,
     headers: {
       "Cache-Control": "no-cache",
       "Content-Type": "application/x-www-form-urlencoded",
@@ -92,7 +94,7 @@ export async function refreshToken(userId: string) {
 export async function getAuthToken(userId: string) {
   log.info(`Get Auth Token: userId=${userId}`);
 
-  // make this more efficent later
+  // make this more efficient later
   await makeApiRequest("/v1/me", "GET", userId);
 
   // perform some kind of authorization here
@@ -109,4 +111,19 @@ export async function getAuthToken(userId: string) {
 
 export function getNearbyUsers() {
   return UserModel.getAllUsers();
+}
+
+export async function searchSpotify(userId: string, query: string) {
+  log.info(`Searching: userId=${userId}, query=${query}`);
+  // load users settings
+
+  const result = await makeApiRequest(
+    `/v1/search?q=${query}&type=album,artist,track`,
+    "GET",
+    userId,
+  );
+
+  // filter results based on user settings
+
+  return result;
 }

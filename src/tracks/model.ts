@@ -13,6 +13,7 @@ export async function addTrack(
     id: trackData.id,
     artist: trackData.artists[0].name,
     name: trackData.name,
+    likes: 0,
   });
   await track.save();
   return track;
@@ -23,12 +24,24 @@ export async function likeTrack(
   likerId: string,
   trackUri: string,
 ) {
+  // create and save like
   const like = new TrackLike({
     userId,
     trackUri,
     likerId,
   });
   await like.save();
+
+  // add one like to the model
+  await Track.findOneAndUpdate(
+    {
+      uri: trackUri,
+    },
+    {
+      $inc: { likes: 1 },
+    },
+  );
+
   return like;
 }
 
@@ -40,8 +53,9 @@ export function removeTrack(userId: string, trackUri: string) {
 }
 
 export async function getTracks(userId: string) {
-  const tracks = await Track.find({
-    userId,
-  });
+  const tracks = await Track.find({ userId })
+    .limit(10)
+    .sort({ likes: -1 });
+
   return tracks;
 }

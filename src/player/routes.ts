@@ -7,14 +7,20 @@ const log = createLogger({
 });
 
 export async function startQueue(req: Request, res: Response) {
-  const { id } = req.body;
-  await PlayerController.startQueue(id);
+  const { id, deviceId } = req.body;
+  await PlayerController.startQueue(id, deviceId);
   res.send({ status: "done" });
 }
 
 export async function getPlayer(req: Request, res: Response) {
   const { id } = req.params;
   const data = await PlayerController.getPlayer(id);
+  res.send(data);
+}
+
+export async function setPlayer(req: Request, res: Response) {
+  const { id, state } = req.body;
+  const data = await PlayerController.sendPlayer(id, state);
   res.send(data);
 }
 

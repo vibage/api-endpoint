@@ -11,8 +11,6 @@ const log = createLogger({
 
 export const io = socketIO(server);
 
-// io.origins('*:*');
-
 io.on("connection", (socket) => {
   log.info("Connection");
   socket.on("myId", (id: any) => {

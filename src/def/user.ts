@@ -7,6 +7,7 @@ export interface IUserModel extends Document {
   refreshToken: string;
   playlistId: string;
   playlistURI: string;
+  player: string;
 }
 
 export const UserSchema: Schema = new Schema({
@@ -16,6 +17,7 @@ export const UserSchema: Schema = new Schema({
   spotifyId: String,
   playlistId: String,
   playlistURI: String,
+  player: String,
 });
 
 export const SpotifyUser: Model<IUserModel> = model<IUserModel>(

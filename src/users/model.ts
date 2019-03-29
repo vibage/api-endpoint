@@ -35,6 +35,13 @@ export async function setTokens(id: string, aToken: string) {
   return user;
 }
 
+export async function setPlayerState(id: string, player: any) {
+  const user = await SpotifyUser.findByIdAndUpdate(id, {
+    player,
+  });
+  return user;
+}
+
 export async function getAccessToken(id: string) {
   const user = await SpotifyUser.findById(id);
   if (user) {

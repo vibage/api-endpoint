@@ -7,6 +7,7 @@ app.post("/spotify", UserController.authorize);
 app.get("/users", UserController.getNearbyUsers);
 app.get("/spotify/getToken/:id", UserController.getToken);
 app.post("/spotify/refresh", UserController.refreshToken);
+app.get("/user/:id/search", UserController.searchSpotify);
 
 app.put("/spotify/addTrack", TrackController.addTrack);
 app.post("/spotify/removeTrack", TrackController.removeTrack);
@@ -17,4 +18,5 @@ app.post("/track/like", TrackController.likeTrack);
 app.post("/player/startQueue", PlayerController.startQueue);
 app.put("/player/play", PlayerController.play);
 app.put("/player/pause", PlayerController.pause);
-app.get("/spotify/player/:id", PlayerController.getPlayer);
+app.get("/player/:id", PlayerController.getPlayer);
+app.put("/player/state", PlayerController.setPlayer);

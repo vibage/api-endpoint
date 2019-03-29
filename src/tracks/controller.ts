@@ -100,7 +100,12 @@ export async function likeTrack(
   trackUri: string,
   likerId: string,
 ) {
+  log.info(
+    `Track Like: userId=${userId}, trackUri=${trackUri}, likerId=${likerId}`,
+  );
   const like = await TrackModel.likeTrack(userId, likerId, trackUri);
+  sendAllTracks(userId);
+  return like;
 }
 
 export async function getTracks(userId: string) {
@@ -112,6 +117,10 @@ export async function nextTrack(userId: string) {
   log.info("Next Track");
   const tracks = await getTracks(userId);
 
+  if (tracks.length === 1) {
+    throw new Error("End of Queue");
+  }
+
   // remove the first track
   await removeTrack(userId, tracks[0].uri);
 
@@ -122,10 +131,8 @@ export async function nextTrack(userId: string) {
 
   await sendAllTracks(userId);
 
-  // get player context to send to user (probably hasn't updated yet)
-  const data = await makeApiRequest("/v1/me", "GET", userId);
-
-  return data;
+  // send the next track to the user
+  return tracks[1];
 }
 
 export async function sendAllTracks(userId: string, tracks?: ITrackModel[]) {
