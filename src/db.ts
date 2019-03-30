@@ -10,7 +10,7 @@ const uri =
 
 mongoose.connect(uri, { useNewUrlParser: true }).then(
   () => {
-    log.info("Connected to Database");
+    log.info(`Connected to Database at ${uri}`);
   },
   (err) => {
     log.info({ err });

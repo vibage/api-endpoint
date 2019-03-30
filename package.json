@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "start": "node dist/server.js | bunyan -o short",
-    "start:prod": "NODE_ENV=prod npm run build && npm run start",
+    "start:prod": "npm run build && NODE_ENV=prod npm run start",
     "start:dev": "yarn install && npm-run-all --parallel watch:server watch:build",
     "build": "tsc",
     "watch:server": "nodemon dist/server.js | bunyan -o short",
