@@ -3,8 +3,10 @@ import mongoose from "mongoose";
 
 const log = createLogger({ name: "DB" });
 
-// const uri = "mongodb+srv://admin:admin@cluster0-aligf.mongodb.net/devices?retryWrites=true";
-const uri = "mongodb://mongodb:27017/local";
+const uri =
+  process.env.NODE_ENV === "prod"
+    ? "mongodb+srv://admin:admin@cluster0-aligf.mongodb.net/devices?retryWrites=true"
+    : "mongodb://mongodb:27017/local";
 
 mongoose.connect(uri, { useNewUrlParser: true }).then(
   () => {
