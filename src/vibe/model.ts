@@ -1,6 +1,26 @@
 import { Vibe } from "../def/Vibe";
 
 
+
+export async function addVibe(hostId: string, vibeId: string) {
+    vibe = await VibeModel.getDefaultPlaylist(hostId, vibeId);
+    return vibe;
+  }
+
+
+  export async function removeVibe(hostId: string, vibeId: string) {
+
+    vibe = await VibeModel.getDefaultPlaylist(hostId, vibeId);
+    return vibe;
+  }
+
+
+  export async function getVibes(hostId: string, vibeId: string) {
+    const vibes = await Vibe.find()
+    return vibes;
+  }
+
+
 export async function addGenre(hostId: string, vibeId: string, genre: string) {
     log.info(`Add Genre: hostId=${hostId}, vibeId=${vibeId}, genre=${genre}`);
   
@@ -92,29 +112,12 @@ export async function addGenre(hostId: string, vibeId: string, genre: string) {
       }
     
       export async function getName(hostId: string, vibeId: string) {
-        
+
         name = await VibeModel.getDefaultPlaylist(hostId, vibeId);
         return name;
       }
     
 
-      export async function addVibe(hostId: string, vibeId: string) {
-        vibe = await VibeModel.getDefaultPlaylist(hostId, vibeId);
-        return vibe;
-      }
-
-
-      export async function removeVibe(hostId: string, vibeId: string) {
-    
-        vibe = await VibeModel.getDefaultPlaylist(hostId, vibeId);
-        return vibe;
-      }
-
-
-      export async function getVibes(hostId: string, vibeId: string) {
-        const vibes = await Vibe.find()
-        return vibes;
-      }
       
     
 
