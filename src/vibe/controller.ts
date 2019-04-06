@@ -10,6 +10,7 @@ const log = createLogger({
   name: "Vibe",
 });
 
+
 export async function addVibe(hostId: string) {
     log.info(`add vibe: hostId=${hostId}`);
   
