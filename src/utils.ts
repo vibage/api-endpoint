@@ -1,10 +1,9 @@
 import { createLogger } from "bunyan";
+import { NextFunction, Response } from "express";
 import fetch from "node-fetch";
-import { IUserModel } from "./def/user";
-import * as UserController from "./users/controller";
-import * as UserModel from "./users/model";
-
-// Dannyiel Voos came up with name (ish)
+import { IHostModel } from "./def/host";
+import * as HostController from "./host/controller";
+import * as HostModel from "./host/model";
 
 const log = createLogger({ name: "Utils" });
 
@@ -42,7 +41,7 @@ async function sendRequest(
 export async function makeApiRequest(
   route: string,
   method: string,
-  userThing: string | IUserModel,
+  userThing: string | IHostModel,
   payload?: object,
 ) {
   log.info(`API Request: route=${route}, method=${method}`);
@@ -50,7 +49,7 @@ export async function makeApiRequest(
   // get user
   const user =
     typeof userThing === "string"
-      ? await UserModel.getUser(userThing)
+      ? await HostModel.getUser(userThing)
       : userThing;
 
   if (!user) {
@@ -66,9 +65,23 @@ export async function makeApiRequest(
     data.error.status === 401
   ) {
     log.info("Refreshing Token");
-    await UserController.refreshToken(user.id);
+    await HostController.refreshToken(user.id);
     await sendRequest(route, method, user.accessToken, payload);
   }
 
   return data;
+}
+
+export function RouteWrapper(
+  value: Promise<any>,
+  res: Response,
+  next: NextFunction,
+): void {
+  value
+    .then((val) => {
+      res.send(val);
+    })
+    .catch((err) => {
+      next(err);
+    });
 }

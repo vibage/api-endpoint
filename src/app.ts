@@ -18,3 +18,8 @@ app.use(cookieParser());
 
 import "./db";
 import "./routes";
+
+app.use((err: any, req: any, res: any, next: any) => {
+  console.log(err);
+  res.status(500).send(err.message);
+});

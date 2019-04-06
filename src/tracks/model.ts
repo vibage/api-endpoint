@@ -2,13 +2,13 @@ import { Track } from "../def/track";
 import { TrackLike } from "../def/trackLike";
 
 export async function addTrack(
-  userId: string,
+  hostId: string,
   trackData: ITrack,
-  ipAddress: string,
+  queuerId: string,
 ) {
   const track = new Track({
-    userId,
-    addedBy: ipAddress,
+    hostId,
+    queuerId,
     uri: trackData.uri,
     id: trackData.id,
     artist: trackData.artists[0].name,
@@ -20,13 +20,13 @@ export async function addTrack(
 }
 
 export async function likeTrack(
-  userId: string,
+  hostId: string,
   likerId: string,
   trackUri: string,
 ) {
   // create and save like
   const like = new TrackLike({
-    userId,
+    hostId,
     trackUri,
     likerId,
   });
@@ -45,15 +45,15 @@ export async function likeTrack(
   return like;
 }
 
-export function removeTrack(userId: string, trackUri: string) {
+export function removeTrack(hostId: string, trackUri: string) {
   return Track.findOneAndDelete({
-    userId,
+    hostId,
     uri: trackUri,
   });
 }
 
-export async function getTracks(userId: string) {
-  const tracks = await Track.find({ userId })
+export async function getTracks(hostId: string) {
+  const tracks = await Track.find({ hostId })
     .limit(10)
     .sort({ likes: -1 });
 

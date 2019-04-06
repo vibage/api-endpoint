@@ -1,4 +1,4 @@
-import { SpotifyUser } from "../def/user";
+import { Host } from "../def/host";
 
 export async function createUser(
   name: string,
@@ -8,7 +8,7 @@ export async function createUser(
   playlistId: string,
   playlistURI: string,
 ) {
-  const user = new SpotifyUser({
+  const user = new Host({
     name,
     spotifyId,
     accessToken: aToken,
@@ -21,29 +21,29 @@ export async function createUser(
 }
 
 export function getUser(userId: string) {
-  return SpotifyUser.findById(userId);
+  return Host.findById(userId);
 }
 
 export function getAllUsers() {
-  return SpotifyUser.find({});
+  return Host.find({});
 }
 
 export async function setTokens(id: string, aToken: string) {
-  const user = await SpotifyUser.findByIdAndUpdate(id, {
+  const user = await Host.findByIdAndUpdate(id, {
     accessToken: aToken,
   });
   return user;
 }
 
 export async function setPlayerState(id: string, player: any) {
-  const user = await SpotifyUser.findByIdAndUpdate(id, {
+  const user = await Host.findByIdAndUpdate(id, {
     player,
   });
   return user;
 }
 
 export async function getAccessToken(id: string) {
-  const user = await SpotifyUser.findById(id);
+  const user = await Host.findById(id);
   if (user) {
     return user.accessToken;
   } else {

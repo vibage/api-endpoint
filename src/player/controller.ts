@@ -1,7 +1,7 @@
 import { createLogger } from "bunyan";
+import * as HostModel from "../host/model";
 import { io } from "../server";
 import * as TrackController from "../tracks/controller";
-import * as UserModel from "../users/model";
 import { makeApiRequest } from "../utils";
 
 const log = createLogger({
@@ -11,7 +11,7 @@ const log = createLogger({
 export async function startQueue(userId: string, deviceId: string) {
   log.info(`Playing Fizzle: userId=${userId}`);
 
-  const user = await UserModel.getUser(userId);
+  const user = await HostModel.getUser(userId);
 
   if (!user) {
     return false;
@@ -45,7 +45,7 @@ export async function startQueue(userId: string, deviceId: string) {
 export async function getPlayer(userId: string) {
   log.info(`Player info: userId=${userId}`);
 
-  const user = await UserModel.getUser(userId);
+  const user = await HostModel.getUser(userId);
   if (!user) {
     return;
   }
@@ -55,7 +55,7 @@ export async function getPlayer(userId: string) {
 
 export async function sendPlayer(userId: string, player: any) {
   log.info("Sending Player", userId);
-  UserModel.setPlayerState(userId, JSON.stringify(player));
+  HostModel.setPlayerState(userId, JSON.stringify(player));
   io.to(userId).emit("player", player);
   return {
     status: "Done",

@@ -3,7 +3,7 @@ import { Document, Model, model, Schema } from "mongoose";
 export interface ITrackModel extends Document {
   uri: string;
   addedBy: string;
-  userId: string;
+  hostId: string;
   addedAt: Date;
   id: string;
   artist: string;
@@ -17,9 +17,10 @@ export let TrackSchema: Schema = new Schema({
   name: String,
   artist: String,
   addedBy: String,
-  userId: String,
+  hostId: String,
   likes: Number,
 });
+
 TrackSchema.pre("save", function(next) {
   const now = new Date();
   if (!(this as ITrackModel).addedAt) {
@@ -29,6 +30,6 @@ TrackSchema.pre("save", function(next) {
 });
 
 export const Track: Model<ITrackModel> = model<ITrackModel>(
-  "SpotifyTrack",
+  "track",
   TrackSchema,
 );

@@ -1,5 +1,6 @@
 import { createLogger } from "bunyan";
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+import { RouteWrapper } from "../utils";
 import * as controller from "./controller";
 
 const log = createLogger({
@@ -39,9 +40,12 @@ export async function getToken(req: Request, res: Response) {
   }
 }
 
-export async function getNearbyUsers(req: Request, res: Response) {
-  const users = await controller.getNearbyUsers();
-  res.send(users);
+export async function getNearbyUsers(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  RouteWrapper(controller.getNearbyUsers(), res, next);
 }
 
 export async function searchSpotify(req: Request, res: Response) {

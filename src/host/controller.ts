@@ -1,7 +1,7 @@
 import { createLogger } from "bunyan";
 import fetch from "node-fetch";
 import { makeApiRequest } from "../utils";
-import * as UserModel from "./model";
+import * as HostModel from "./model";
 
 const log = createLogger({
   name: "Users",
@@ -55,7 +55,7 @@ export async function requestAuthToken(code: string) {
   const playlistInfo = await playlistRes.json();
 
   // create the user
-  const user = await UserModel.createUser(
+  const user = await HostModel.createUser(
     userData.display_name,
     userData.id,
     result.access_token,
@@ -70,7 +70,7 @@ export async function requestAuthToken(code: string) {
 export async function refreshToken(userId: string) {
   log.info(`Refresh: userId=${userId}`);
 
-  const user = await UserModel.getUser(userId);
+  const user = await HostModel.getUser(userId);
 
   if (!user) {
     throw new Error("User not found");
@@ -88,7 +88,7 @@ export async function refreshToken(userId: string) {
   });
   const data = await response.json();
 
-  return await UserModel.setTokens(userId, data.access_token);
+  return await HostModel.setTokens(userId, data.access_token);
 }
 
 export async function getAuthToken(userId: string) {
@@ -98,7 +98,7 @@ export async function getAuthToken(userId: string) {
   await makeApiRequest("/v1/me", "GET", userId);
 
   // perform some kind of authorization here
-  const user = await UserModel.getUser(userId);
+  const user = await HostModel.getUser(userId);
 
   if (!user) {
     throw new Error("User does not exist");
@@ -109,8 +109,8 @@ export async function getAuthToken(userId: string) {
   return user.accessToken;
 }
 
-export function getNearbyUsers() {
-  return UserModel.getAllUsers();
+export async function getNearbyUsers() {
+  return HostModel.getAllUsers();
 }
 
 export async function searchSpotify(userId: string, query: string) {

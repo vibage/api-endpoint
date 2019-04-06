@@ -52,10 +52,9 @@ export async function nextTrack(req: Request, res: Response) {
 }
 
 export async function likeTrack(req: Request, res: Response) {
-  const { id, trackUri } = req.body;
-  const { listenerId } = req.cookies;
+  const { id, trackUri, userId } = req.body;
   try {
-    const like = await trackController.likeTrack(id, trackUri, listenerId);
+    const like = await trackController.likeTrack(id, trackUri, userId);
     res.status(200).send(like);
   } catch (err) {
     log.error({ err });
