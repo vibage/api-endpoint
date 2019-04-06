@@ -9,6 +9,44 @@ const log = createLogger({
 
 
 
+export async function addVibe(req: Request, res: Response) {
+
+    const { hostId } = req.body;
+  
+    try {
+      const vibe = await VibeController.addVibe(hostId);
+      res.status(200).send(vibe);
+    } catch (err) {
+      log.error({ err });
+      res.status(400).send(err);
+    }
+}
+  
+export async function removeVibe(req: Request, res: Response) {
+    const { hostId, vibeId } = req.body;
+    try {
+      const vibe = await VibeController.removeVibe(hostId, vibeId);
+      res.status(200).send(vibe);
+    } catch (err) {
+      log.error({ err });
+      res.status(400).send(err);
+    }
+}
+  
+export async function getVibes(req: Request, res: Response) {
+    const { hostId, vibeId } = req.params;
+    try {
+      const vibes = await VibeController.getVibes(hostId, vibeId);
+      res.status(200).send(vibes);
+    } catch (err) {
+      log.error({ err });
+      res.status(400).send(err);
+    }
+}
+  
+
+
+
 export async function addGenre(req: Request, res: Response) {
 
   const { hostId, vibeId, genre } = req.body;
@@ -46,7 +84,6 @@ export async function getGenres(req: Request, res: Response) {
 
 
 
-
 export async function setExplicit(req: Request, res: Response) {
   const { hostId, vibeId, explicit } = req.params;
   try {
@@ -68,7 +105,6 @@ export async function getExplicit(req: Request, res: Response) {
     res.status(400).send(err);
   }
 }
-
 
 
 
@@ -94,8 +130,7 @@ export async function getPricing(req: Request, res: Response) {
     }
   }
   
-  
-  
+
 
 export async function setDefaultPlaylist(req: Request, res: Response) {
     const { hostId, vibeId, defaultPlaylist } = req.params;
@@ -120,4 +155,25 @@ export async function getDefaultPlaylist(req: Request, res: Response) {
   }
   
   
+export async function setName(req: Request, res: Response) {
+    const { hostId, vibeId, name } = req.body;
+    try { 
+      const vibe= await VibeController.setName(hostId, vibeId, name);
+      res.status(200).send(vibe);
+    } catch (err) {
+      log.error({ err });
+      res.status(400).send(err);
+    }
+  }
+  
+export async function getName(req: Request, res: Response) {
+    const { hostId, vibeId } = req.body;
+    try {
+      const name = await VibeController.getName(hostId, vibeId);
+      res.status(200).send(name);
+    } catch (err) {
+      log.error({ err });
+      res.status(400).send(err);
+    }
+  }
   
