@@ -7,10 +7,10 @@ const log = createLogger({
 });
 
 export async function addTrack(req: Request, res: Response) {
-  const { id, trackId } = req.body;
+  const { hostId, trackId } = req.body;
   const ip = req.connection.remoteAddress as string;
   try {
-    const track = await trackController.addTrack(id, trackId, ip);
+    const track = await trackController.addTrack(hostId, trackId, ip);
     res.status(200).send(JSON.stringify(track));
   } catch (err) {
     log.error({ err });
@@ -19,9 +19,9 @@ export async function addTrack(req: Request, res: Response) {
 }
 
 export async function removeTrack(req: Request, res: Response) {
-  const { id, uri } = req.body;
+  const { hostId, uri } = req.body;
   try {
-    const track = await trackController.removeTrack(id, uri);
+    const track = await trackController.removeTrack(hostId, uri);
     res.status(200).send(JSON.stringify(track));
   } catch (err) {
     log.error({ err });
@@ -30,9 +30,9 @@ export async function removeTrack(req: Request, res: Response) {
 }
 
 export async function getTracks(req: Request, res: Response) {
-  const { id } = req.params;
+  const { hostId } = req.params;
   try {
-    const tracks = await trackController.getTracks(id);
+    const tracks = await trackController.getTracks(hostId);
     res.status(200).send(JSON.stringify(tracks));
   } catch (err) {
     log.error({ err });
@@ -41,9 +41,9 @@ export async function getTracks(req: Request, res: Response) {
 }
 
 export async function nextTrack(req: Request, res: Response) {
-  const { id } = req.params;
+  const { hostId } = req.params;
   try {
-    const data = await trackController.nextTrack(id);
+    const data = await trackController.nextTrack(hostId);
     res.status(200).send(data);
   } catch (err) {
     log.error({ err });
@@ -52,12 +52,23 @@ export async function nextTrack(req: Request, res: Response) {
 }
 
 export async function likeTrack(req: Request, res: Response) {
-  const { id, trackUri, userId } = req.body;
+  const { hostId, trackUri, userId } = req.body;
   try {
-    const like = await trackController.likeTrack(id, trackUri, userId);
+    const like = await trackController.likeTrack(hostId, trackUri, userId);
     res.status(200).send(like);
   } catch (err) {
     log.error({ err });
     res.status(400).send(err);
+  }
+}
+
+export async function pay4Track(req: Request, res: Response) {
+  const { hostId, trackUri, userId } = req.body;
+  try {
+    const track = await trackController.pay4Track(hostId, trackUri, userId);
+    res.status(200).send(track);
+  } catch (err) {
+    log.error({ err });
+    res.status(400)
   }
 }

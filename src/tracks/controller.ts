@@ -11,16 +11,16 @@ const log = createLogger({
 });
 
 export async function addTrack(
-  userId: string,
+  hostId: string,
   trackId: string,
   ipAddress: string,
 ) {
-  log.info(`Add Track: userId=${userId}, trackId=${trackId}, ip=${ipAddress}`);
+  log.info(`Add Track: userId=${hostId}, trackId=${trackId}, ip=${ipAddress}`);
 
   // check if the user had added a track recently based on the companies rules
 
   // get user data
-  const user = await HostModel.getUser(userId);
+  const user = await HostModel.getUser(hostId);
 
   if (!user) {
     return false;
@@ -34,44 +34,48 @@ export async function addTrack(
   );
 
   // add track to database
-  const track = await TrackModel.addTrack(userId, trackData, ipAddress);
+  const track = await TrackModel.addTrack(hostId, trackData, ipAddress);
 
   // send tracks via socket
-  await sendAllTracks(userId);
+  await sendAllTracks(hostId);
   return track;
 }
 
-export async function removeTrack(userId: string, uri: string) {
-  log.info(`Removing track: userId=${userId}, uri=${uri}`);
+export async function removeTrack(hostId: string, uri: string) {
+  log.info(`Removing track: userId=${hostId}, uri=${uri}`);
 
   // get user information
-  const user = await HostModel.getUser(userId);
+  const user = await HostModel.getUser(hostId);
 
   if (!user) {
     throw new Error("User does not exist");
   }
 
   // remove from database
-  await TrackModel.removeTrack(userId, uri);
+  await TrackModel.removeTrack(hostId, uri);
 
-  await sendAllTracks(userId);
+  await sendAllTracks(hostId);
 }
 
 export async function likeTrack(
-  userId: string,
+  hostId: string,
   trackUri: string,
   likerId: string,
 ) {
   log.info(
-    `Track Like: userId=${userId}, trackUri=${trackUri}, likerId=${likerId}`,
+    `Track Like: userId=${hostId}, trackUri=${trackUri}, likerId=${likerId}`,
   );
-  const like = await TrackModel.likeTrack(userId, likerId, trackUri);
-  sendAllTracks(userId);
+  const like = await TrackModel.likeTrack(hostId, likerId, trackUri);
+  sendAllTracks(hostId);
   return like;
 }
 
-export async function getTracks(userId: string) {
-  const tracks = await TrackModel.getTracks(userId);
+export async function pay4Track(hostId: string, trackUri: string, userId: string) {
+  const track = await TrackModel.pay4Track(hostId, trackUri, userId);
+  return track;
+}
+export async function getTracks(hostId: string) {
+  const tracks = await TrackModel.getTracks(hostId);
   return tracks;
 }
 
