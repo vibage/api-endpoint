@@ -1,14 +1,14 @@
 import { Document, Model, model, Schema } from "mongoose";
 
 export interface ITrackLikeModel extends Document {
-  userId: string;
+  hostId: string;
   trackId: string;
-  likerId: string;
+  queuerId: string;
 }
 
 export const TrackLikeSchema: Schema = new Schema({
-  userId: String,
-  likerId: String,
+  hostId: String,
+  queuerId: String,
   trackId: String,
 });
 

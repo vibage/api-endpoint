@@ -5,7 +5,7 @@ import * as QueuerController from "./queuer/routes";
 import * as TrackController from "./tracks/routes";
 
 app.post("/spotify", HostController.authorize);
-app.get("/users", HostController.getNearbyUsers);
+app.get("/hosts", HostController.getNearbyUsers);
 app.get("/spotify/getToken/:id", HostController.getToken);
 app.post("/spotify/refresh", HostController.refreshToken);
 app.get("/user/:id/search", HostController.searchSpotify);
@@ -15,8 +15,11 @@ app.post("/spotify/removeTrack", TrackController.removeTrack);
 app.get("/spotify/getTracks/:id", TrackController.getTracks);
 app.get("/spotify/nextTrack/:id", TrackController.nextTrack);
 app.post("/track/like", TrackController.likeTrack);
+app.post("/track/:trackId/unlike", TrackController.unlikeTrack);
 
-app.get("/user/likes", QueuerController.getUserLikes);
+app.get("/queuer/:id/likes", QueuerController.getUserLikes);
+app.get("/queuer/:id", QueuerController.getQueuer);
+app.post("/queuer", QueuerController.createUser);
 
 app.post("/player/startQueue", PlayerController.startQueue);
 app.put("/player/play", PlayerController.play);

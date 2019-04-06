@@ -21,28 +21,34 @@ export async function addTrack(
 
 export async function likeTrack(
   hostId: string,
-  likerId: string,
-  trackUri: string,
+  queuerId: string,
+  trackId: string,
 ) {
   // create and save like
   const like = new TrackLike({
     hostId,
-    trackUri,
-    likerId,
+    trackId,
+    queuerId,
   });
   await like.save();
 
   // add one like to the model
-  await Track.findOneAndUpdate(
-    {
-      uri: trackUri,
-    },
-    {
-      $inc: { likes: 1 },
-    },
-  );
+  await Track.findByIdAndUpdate(trackId, {
+    $inc: { likes: 1 },
+  });
 
   return like;
+}
+
+export async function unlikeTrack(trackId: string, queuerId: string) {
+  await TrackLike.findOneAndDelete({
+    trackId,
+    queuerId,
+  });
+
+  await Track.findByIdAndUpdate(trackId, {
+    $inc: { likes: -1 },
+  });
 }
 
 export function removeTrack(hostId: string, trackUri: string) {

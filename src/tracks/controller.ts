@@ -58,16 +58,27 @@ export async function removeTrack(userId: string, uri: string) {
 }
 
 export async function likeTrack(
-  userId: string,
-  trackUri: string,
-  likerId: string,
+  hostId: string,
+  trackId: string,
+  queuerId: string,
 ) {
-  log.info(
-    `Track Like: userId=${userId}, trackUri=${trackUri}, likerId=${likerId}`,
-  );
-  const like = await TrackModel.likeTrack(userId, likerId, trackUri);
-  sendAllTracks(userId);
+  log.info(`Like: hostId=${hostId}, trackId=${trackId}, queuerId=${queuerId}`);
+  const like = await TrackModel.likeTrack(hostId, queuerId, trackId);
+  sendAllTracks(hostId);
   return like;
+}
+
+export async function unlikeTrack(
+  hostId: string,
+  queuerId: string,
+  trackId: string,
+) {
+  log.info(`Unlike: hostId=${hostId} queuerId=${queuerId} trackId=${trackId}`);
+  await TrackModel.unlikeTrack(queuerId, trackId);
+  sendAllTracks(hostId);
+  return {
+    status: "done",
+  };
 }
 
 export async function getTracks(userId: string) {
@@ -91,6 +102,7 @@ export async function nextTrack(userId: string) {
     uris: [tracks[1].uri],
   });
 
+  // send tracks to user
   await sendAllTracks(userId);
 
   // send the next track to the user
@@ -98,7 +110,7 @@ export async function nextTrack(userId: string) {
 }
 
 export async function sendAllTracks(userId: string, tracks?: ITrackModel[]) {
-  const allTracks = await new Promise(async (resolve, rej) => {
+  const allTracks: ITrackModel[] = await new Promise(async (resolve, rej) => {
     if (tracks) {
       resolve(tracks);
     } else {
@@ -106,5 +118,6 @@ export async function sendAllTracks(userId: string, tracks?: ITrackModel[]) {
       resolve(loadedTracks);
     }
   });
+
   io.to(userId).emit("tracks", allTracks);
 }

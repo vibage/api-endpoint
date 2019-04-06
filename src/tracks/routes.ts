@@ -52,9 +52,21 @@ export async function nextTrack(req: Request, res: Response) {
 }
 
 export async function likeTrack(req: Request, res: Response) {
-  const { id, trackUri, userId } = req.body;
+  const { hostId, trackId, queuerId } = req.body;
   try {
-    const like = await trackController.likeTrack(id, trackUri, userId);
+    const like = await trackController.likeTrack(hostId, trackId, queuerId);
+    res.status(200).send(like);
+  } catch (err) {
+    log.error({ err });
+    res.status(400).send(err);
+  }
+}
+
+export async function unlikeTrack(req: Request, res: Response) {
+  const { queuerId, hostId } = req.body;
+  const { trackId } = req.params;
+  try {
+    const like = await trackController.unlikeTrack(hostId, trackId, queuerId);
     res.status(200).send(like);
   } catch (err) {
     log.error({ err });

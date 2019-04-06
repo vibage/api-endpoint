@@ -1,16 +1,42 @@
 import { createLogger } from "bunyan";
 import { Request, Response } from "express";
-import * as userController from "./controller";
+import * as queuerController from "./controller";
 
 const log = createLogger({
-  name: "Track",
+  name: "Queuer",
 });
 
-export async function getUserLikes(req: Request, res: Response) {
-  const { userId } = req.body;
+export async function getQueuer(req: Request, res: Response) {
+  const { id } = req.params;
   try {
-    const likes = await userController.getUserLikes(userId);
-    res.status(200).send(JSON.stringify(likes));
+    const queuer = await queuerController.getQueuer(id);
+    res.status(200).send(JSON.stringify(queuer));
+  } catch (err) {
+    log.error({ err });
+    res.status(400).send(err);
+  }
+}
+
+export async function getUserLikes(req: Request, res: Response) {
+  const { id } = req.params;
+  try {
+    const likes = await queuerController.getUserLikes(id);
+    res.status(200).send(
+      JSON.stringify({
+        payload: likes,
+      }),
+    );
+  } catch (err) {
+    log.error({ err });
+    res.status(400).send(err);
+  }
+}
+
+export async function createUser(req: Request, res: Response) {
+  const { queuerId } = req.body;
+  try {
+    const queuer = await queuerController.createQueuer(queuerId);
+    res.status(200).send(JSON.stringify(queuer));
   } catch (err) {
     log.error({ err });
     res.status(400).send(err);

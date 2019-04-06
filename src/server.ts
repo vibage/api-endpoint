@@ -14,6 +14,12 @@ export const io = socketIO(server);
 io.on("connection", (socket) => {
   log.info("Connection");
   socket.on("myId", (id: any) => {
+    // const roomIds = Object.keys(socket.rooms);
+    // if (roomIds.length > 0) {
+    //   log.info(`Leaving room: ${roomIds}`);
+    //   const roomId = roomIds[0];
+    //   socket.leave(roomId);
+    // }
     log.info(`Join Room ${id}`);
     socket.join(id);
   });
