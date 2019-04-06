@@ -117,7 +117,7 @@ export async function setPricing(req: Request, res: Response) {
       log.error({ err });
       res.status(400).send(err);
     }
-  }
+}
   
 export async function getPricing(req: Request, res: Response) {
     const { hostId, vibeId } = req.body;
@@ -128,7 +128,7 @@ export async function getPricing(req: Request, res: Response) {
       log.error({ err });
       res.status(400).send(err);
     }
-  }
+}
   
 
 
@@ -141,7 +141,7 @@ export async function setDefaultPlaylist(req: Request, res: Response) {
       log.error({ err });
       res.status(400).send(err);
     }
-  }
+}
   
 export async function getDefaultPlaylist(req: Request, res: Response) {
     const { hostId, vibeId } = req.body;
@@ -152,7 +152,7 @@ export async function getDefaultPlaylist(req: Request, res: Response) {
       log.error({ err });
       res.status(400).send(err);
     }
-  }
+}
   
   
 export async function setName(req: Request, res: Response) {
@@ -164,7 +164,7 @@ export async function setName(req: Request, res: Response) {
       log.error({ err });
       res.status(400).send(err);
     }
-  }
+}
   
 export async function getName(req: Request, res: Response) {
     const { hostId, vibeId } = req.body;
@@ -175,5 +175,5 @@ export async function getName(req: Request, res: Response) {
       log.error({ err });
       res.status(400).send(err);
     }
-  }
+}
   
