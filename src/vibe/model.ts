@@ -83,7 +83,39 @@ export async function addGenre(hostId: string, vibeId: string, genre: string) {
       return DefaultPlaylist;
     }
     
-     
+
+    export async function setName(hostId: string, vibeId: string) {
+        log.info(`get default playlist: hostId=${hostId}, vibeId=${vibeId}`);
+    
+        vibe = await VibeModel.getDefaultPlaylist(hostId, vibeId);
+        return vibe;
+      }
+    
+      export async function getName(hostId: string, vibeId: string) {
+        
+        name = await VibeModel.getDefaultPlaylist(hostId, vibeId);
+        return name;
+      }
+    
+
+      export async function addVibe(hostId: string, vibeId: string) {
+        vibe = await VibeModel.getDefaultPlaylist(hostId, vibeId);
+        return vibe;
+      }
+
+
+      export async function removeVibe(hostId: string, vibeId: string) {
+    
+        vibe = await VibeModel.getDefaultPlaylist(hostId, vibeId);
+        return vibe;
+      }
+
+
+      export async function getVibes(hostId: string, vibeId: string) {
+        const vibes = await Vibe.find()
+        return vibes;
+      }
+      
     
 
 
