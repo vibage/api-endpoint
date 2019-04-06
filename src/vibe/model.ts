@@ -1,8 +1,4 @@
-import { Track } from "../def/track";
-import { TrackLike } from "../def/trackLike";
-
-
-
+import { Vibe } from "../def/Vibe";
 
 
 export async function addGenre(hostId: string, vibeId: string, genre: string) {
@@ -91,41 +87,41 @@ export async function addGenre(hostId: string, vibeId: string, genre: string) {
     
 
 
-export async function addTrack(
+export async function addVibe(
   hostId: string,
-  trackData: ITrack,
+  VibeData: IVibe,
   queuerId: string,
 ) {
-  const track = new Track({
+  const Vibe = new Vibe({
     hostId,
     queuerId,
-    uri: trackData.uri,
-    id: trackData.id,
-    artist: trackData.artists[0].name,
-    name: trackData.name,
+    uri: VibeData.uri,
+    id: VibeData.id,
+    artist: VibeData.artists[0].name,
+    name: VibeData.name,
     likes: 0,
   });
-  await track.save();
-  return track;
+  await Vibe.save();
+  return Vibe;
 }
 
-export async function likeTrack(
+export async function likeVibe(
   hostId: string,
   likerId: string,
-  trackUri: string,
+  VibeUri: string,
 ) {
   // create and save like
-  const like = new TrackLike({
+  const like = new VibeLike({
     hostId,
-    trackUri,
+    VibeUri,
     likerId,
   });
   await like.save();
 
   // add one like to the model
-  await Track.findOneAndUpdate(
+  await Vibe.findOneAndUpdate(
     {
-      uri: trackUri,
+      uri: VibeUri,
     },
     {
       $inc: { likes: 1 },
@@ -133,19 +129,4 @@ export async function likeTrack(
   );
 
   return like;
-}
-
-export function removeTrack(hostId: string, trackUri: string) {
-  return Track.findOneAndDelete({
-    hostId,
-    uri: trackUri,
-  });
-}
-
-export async function getTracks(hostId: string) {
-  const tracks = await Track.find({ hostId })
-    .limit(10)
-    .sort({ likes: -1 });
-
-  return tracks;
 }

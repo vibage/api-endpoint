@@ -16,7 +16,7 @@ export async function addVibe(hostId: string) {
     vibe = await VibeModel.addVibe(hostId);
   
     return vibe;
-  }
+}
 
 export async function removeVibe(hostId: string, vibeId: string) {
     log.info(`remove vibe: hostId=${hostId}, vibeId=${vibeId}, vibeName=${vibeName}`);
@@ -24,7 +24,7 @@ export async function removeVibe(hostId: string, vibeId: string) {
     vibe = await VibeModel.removeVibe(hostId, vibeId);
   
     return vibe;
-  }
+}
 
 export async function getVibes(hostId: string) {
     log.info(`getting vibes for: hostId=${hostId}`);
@@ -32,7 +32,7 @@ export async function getVibes(hostId: string) {
     vibes = await VibeModel.getVibes(hostId);
   
     return vibe;
-  }
+}
 
 
 export async function addGenre(hostId: string, vibeId: string, genre: string) {
@@ -117,5 +117,20 @@ export async function getDefaultPlaylist(hostId: string, vibeId: string) {
     return DefaultPlaylist;
   }
   
+  
+  
+export async function setName(hostId: string, vibeId: string, name: string) {
+    log.info(`set default playlist: hostId=${hostId}, vibeId=${vibeId}, defaultPlaylist=${name}`);
+
+    vibe = await VibeModel.setName(hostId, vibeId, name);
+    return vibe;
+  }
+  
+export async function getName(hostId: string, vibeId: string) {
+    log.info(`get name: hostId=${hostId}, vibeId=${vibeId}`);
+
+    name = await VibeModel.getName(hostId, vibeId);
+    return name;
+  }
   
   
