@@ -10,6 +10,30 @@ const log = createLogger({
   name: "Vibe",
 });
 
+export async function addVibe(hostId: string) {
+    log.info(`add vibe: hostId=${hostId}`);
+  
+    vibe = await VibeModel.addVibe(hostId);
+  
+    return vibe;
+  }
+
+export async function removeVibe(hostId: string, vibeId: string) {
+    log.info(`remove vibe: hostId=${hostId}, vibeId=${vibeId}, vibeName=${vibeName}`);
+  
+    vibe = await VibeModel.removeVibe(hostId, vibeId);
+  
+    return vibe;
+  }
+
+export async function getVibes(hostId: string) {
+    log.info(`getting vibes for: hostId=${hostId}`);
+  
+    vibes = await VibeModel.getVibes(hostId);
+  
+    return vibe;
+  }
+
 
 export async function addGenre(hostId: string, vibeId: string, genre: string) {
   log.info(`Add Genre: hostId=${hostId}, vibeId=${vibeId}, genre=${genre}`);
