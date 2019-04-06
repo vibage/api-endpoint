@@ -155,6 +155,8 @@ export async function getDefaultPlaylist(req: Request, res: Response) {
 }
   
   
+
+
 export async function setName(req: Request, res: Response) {
     const { hostId, vibeId, name } = req.body;
     try { 
