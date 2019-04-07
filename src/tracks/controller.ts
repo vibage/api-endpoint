@@ -1,7 +1,7 @@
 import { createLogger } from "bunyan";
-import fetch from "node-fetch";
 import { ITrackModel } from "../def/track";
 import * as HostModel from "../host/model";
+import * as QueuerController from "../queuer/controller";
 import { io } from "../server";
 import * as TrackModel from "../tracks/model";
 import { makeApiRequest } from "../utils";
@@ -11,20 +11,27 @@ const log = createLogger({
 });
 
 export async function addTrack(
-  userId: string,
+  hostId: string,
   trackId: string,
-  ipAddress: string,
+  queuerId: string,
 ) {
-  log.info(`Add Track: userId=${userId}, trackId=${trackId}, ip=${ipAddress}`);
+  log.info(
+    `Add Track: hostId=${hostId}, trackId=${trackId}, queuerId=${queuerId}`,
+  );
 
   // check if the user had added a track recently based on the companies rules
 
   // get user data
-  const user = await HostModel.getUser(userId);
+  const user = await HostModel.getUser(hostId);
 
   if (!user) {
     return false;
   }
+
+  // get amount of tokens to remove for the vibe
+
+  // remove tokens from user
+  await QueuerController.removeUserTokens(queuerId, 1);
 
   // get track data
   const trackData: ITrack = await makeApiRequest(
@@ -34,27 +41,29 @@ export async function addTrack(
   );
 
   // add track to database
-  const track = await TrackModel.addTrack(userId, trackData, ipAddress);
+  const track = await TrackModel.addTrack(hostId, trackData, queuerId);
+
+  console.log(track);
 
   // send tracks via socket
-  await sendAllTracks(userId);
+  await sendAllTracks(hostId);
   return track;
 }
 
-export async function removeTrack(userId: string, uri: string) {
-  log.info(`Removing track: userId=${userId}, uri=${uri}`);
+export async function removeTrack(hostId: string, uri: string) {
+  log.info(`Removing track: userId=${hostId}, uri=${uri}`);
 
   // get user information
-  const user = await HostModel.getUser(userId);
+  const user = await HostModel.getUser(hostId);
 
   if (!user) {
     throw new Error("User does not exist");
   }
 
   // remove from database
-  await TrackModel.removeTrack(userId, uri);
+  await TrackModel.removeTrack(hostId, uri);
 
-  await sendAllTracks(userId);
+  await sendAllTracks(hostId);
 }
 
 export async function likeTrack(
@@ -81,9 +90,17 @@ export async function unlikeTrack(
   };
 }
 
-export async function getTracks(userId: string) {
-  const tracks = await TrackModel.getTracks(userId);
-  return tracks;
+export async function pay4Track(
+  hostId: string,
+  trackUri: string,
+  userId: string,
+) {
+  const track = await TrackModel.pay4Track(hostId, trackUri, userId);
+  return track;
+}
+
+export function getTracks(hostId: string) {
+  return TrackModel.getTracks(hostId);
 }
 
 export async function nextTrack(userId: string) {

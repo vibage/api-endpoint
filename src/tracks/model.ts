@@ -1,5 +1,6 @@
 import { Track } from "../def/track";
 import { TrackLike } from "../def/trackLike";
+import * as QueuerController from "../queuer/controller";
 
 export async function addTrack(
   hostId: string,
@@ -52,6 +53,36 @@ export async function unlikeTrack(trackId: string, queuerId: string) {
   });
 }
 
+export async function pay4Track(
+  hostId: string,
+  trackUri: string,
+  queuerId: string,
+) {
+  // find queuer's tokens
+  const user = await QueuerController.getQueuer(queuerId);
+
+  if (!user) {
+    return null;
+  }
+
+  if (user.tokens >= 1) {
+    await QueuerController.removeUserTokens(queuerId, 1);
+    const currTrack = await Track.findOneAndUpdate(
+      {
+        uri: trackUri,
+        queuerId,
+        hostId,
+      },
+      {
+        $inc: { paid: 1 },
+      },
+    );
+
+    return currTrack;
+  }
+  throw new Error("out of tokens");
+}
+
 export function removeTrack(hostId: string, trackUri: string) {
   return Track.findOneAndDelete({
     hostId,
@@ -61,8 +92,7 @@ export function removeTrack(hostId: string, trackUri: string) {
 
 export async function getTracks(hostId: string) {
   const tracks = await Track.find({ hostId })
-    .limit(10)
+    .limit(15)
     .sort({ likes: -1 });
-
   return tracks;
 }

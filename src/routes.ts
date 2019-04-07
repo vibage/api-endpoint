@@ -20,6 +20,7 @@ app.post("/track/like", TrackController.likeTrack);
 app.post("/track/:trackId/unlike", TrackController.unlikeTrack);
 
 app.get("/queuer/:id/likes", QueuerController.getUserLikes);
+app.get("/queuer/:id/tokens", QueuerController.getUserTokens);
 app.get("/queuer/:id", QueuerController.getQueuer);
 app.post("/queuer", QueuerController.createUser);
 
