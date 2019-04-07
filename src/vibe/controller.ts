@@ -1,137 +1,139 @@
 import { createLogger } from "bunyan";
-import fetch from "node-fetch";
-import { ITrackModel } from "../def/track";
-import * as HostModel from "../host/model";
-import { io } from "../server";
 import * as VibeModel from "./model";
-import { makeApiRequest } from "../utils";
 
 const log = createLogger({
   name: "Vibe",
 });
 
-
-export async function addVibe(hostId: string) {
-    log.info(`add vibe: hostId=${hostId}`);
-  
-    vibe = await VibeModel.addVibe(hostId);
-  
-    return vibe;
+export async function createVibe(hostId: string) {
+  log.info(`Create: hostId=${hostId}`);
+  const vibe = await VibeModel.createVibe(hostId);
+  return vibe;
 }
 
-export async function removeVibe(hostId: string, vibeId: string) {
-    log.info(`remove vibe: hostId=${hostId}, vibeId=${vibeId}, vibeName=${vibeName}`);
-  
-    vibe = await VibeModel.removeVibe(hostId, vibeId);
-  
-    return vibe;
+export async function removeVibe(vibeId: string) {
+  log.info(`Remove: vibeId=${vibeId}`);
+  const vibe = await VibeModel.removeVibe(vibeId);
+  return vibe;
 }
 
-export async function getVibes(hostId: string) {
-    log.info(`getting vibes for: hostId=${hostId}`);
-  
-    vibes = await VibeModel.getVibes(hostId);
-  
-    return vibe;
+export async function getVibe(vibeId: string) {
+  log.info(`Get: vibeId=${vibeId}`);
+  const vibe = await VibeModel.getVibe(vibeId);
+  return vibe;
 }
 
+export async function setGenera(vibeId: string, genera: string) {
+  log.info(`Add Genre: vibeId=${vibeId}, genera=${genera}`);
 
-export async function addGenre(hostId: string, vibeId: string, genre: string) {
-  log.info(`Add Genre: hostId=${hostId}, vibeId=${vibeId}, genre=${genre}`);
-
-  // get current genres
-  const currentGenres = await getGenres(hostId, vibeId);
+  // get current genera
+  // const currentGenera = await getGenera(hostId, vibeId);
 
   // also need to validate genre type
-  //get all genres from spotify
+  // get all genera from spotify
 
-  if (currentGenres.split(',').includes(genre)) { 
-    log.error('Genre already added')
-    throw 'Genre already added'
-  }
+  // if (currentGenera.split(",").includes(genre)) {
+  //   log.error("Genre already added");
+  //   throw new Error("Genre already added");
+  // }
 
   // add genre to vibe database
-  const vibe = await VibeModel.addGenre(hostId, vibeId, genre);
+  const vibe = await VibeModel.setGenera(vibeId, genera);
 
   return vibe;
 }
 
-export async function removeGenre(hostId: string, vibeId: string, genre: string) {
-  log.info(`Removing genre: hostId=${hostId}, vibeId=${vibeId}, genre=${genre}`);
+// export async function removeGenre(
+//   hostId: string,
+//   vibeId: string,
+//   genre: string,
+// ) {
+//   log.info(
+//     `Removing genre: hostId=${hostId}, vibeId=${vibeId}, genre=${genre}`,
+//   );
 
-  vibe = await VibeModel.removeGenre(hostId, vibeId, genre);
+//   const vibe = await VibeModel.removeGenre(hostId, vibeId, genre);
 
+//   return vibe;
+// }
+
+// export async function getGenres(hostId: string, vibeId: string) {
+//   log.info(`Get Genres: hostId=${hostId}, vibeId=${vibeId}`);
+
+//   const genres = await VibeModel.getGenres(hostId, vibeId);
+//   return genres;
+// }
+
+export async function setExplicit(vibeId: string, explicit: boolean) {
+  log.info(`Set Explicit: vibeId=${vibeId}, explicit=${explicit}`);
+
+  const vibe = await VibeModel.setExplicit(vibeId, explicit);
   return vibe;
 }
 
-export async function getGenres(hostId: string, vibeId: string) {
-  log.info(`Get Genres: hostId=${hostId}, vibeId=${vibeId}`);
+// export async function getExplicit(hostId: string, vibeId: string) {
+//   log.info(`Get Explicit: hostId=${hostId}, vibeId=${vibeId}`);
 
-  const genres = await VibeModel.getGenres(hostId, vibeId);
-  return genres;
-}
+//   const explicit = await VibeModel.getExplicit(hostId, vibeId);
+//   return explicit;
+// }
 
+// export async function setPricing(
+//   hostId: string,
+//   vibeId: string,
+//   pricing: string,
+// ) {
+//   log.info(
+//     `set pricing: hostId=${hostId}, vibeId=${vibeId}, pricing=${pricing}`,
+//   );
 
+//   const vibe = await VibeModel.setPricing(hostId, vibeId, pricing);
+//   return vibe;
+// }
 
-export async function setExplicit(hostId: string, vibeId: string, explicit: string) {
-  log.info(`Set Explicit: hostId=${hostId}, vibeId=${vibeId}, explicit=${explicit}`);
+// export async function getPricing(hostId: string, vibeId: string) {
+//   log.info(`get pricing: hostId=${hostId}, vibeId=${vibeId}`);
 
-  vibe = await VibeModel.setExplicit(hostId, vibeId, explicit);
-  return vibe;
-}
+//   const pricing = await VibeModel.getPricing(hostId, vibeId);
+//   return pricing;
+// }
 
-export async function getExplicit(hostId: string, vibeId: string) {
-    log.info(`Get Explicit: hostId=${hostId}, vibeId=${vibeId}`);
+// export async function setDefaultPlaylist(
+//   hostId: string,
+//   vibeId: string,
+//   defaultPlaylist: string,
+// ) {
+//   log.info(
+//     `set default playlist: hostId=${hostId}, vibeId=${vibeId}, defaultPlaylist=${defaultPlaylist}`,
+//   );
 
-    explicit = await VibeModel.getExplicit(hostId, vibeId);
-    return explicit;
-}
+//   const vibe = await VibeModel.setDefaultPlaylist(
+//     hostId,
+//     vibeId,
+//     defaultPlaylist,
+//   );
+//   return vibe;
+// }
 
+// export async function getDefaultPlaylist(hostId: string, vibeId: string) {
+//   log.info(`get default playlist: hostId=${hostId}, vibeId=${vibeId}`);
 
-export async function setPricing(hostId: string, vibeId: string, pricing: string) {
-    log.info(`set pricing: hostId=${hostId}, vibeId=${vibeId}, pricing=${pricing}`);
+//   const DefaultPlaylist = await VibeModel.getDefaultPlaylist(hostId, vibeId);
+//   return DefaultPlaylist;
+// }
 
-    vibe = await VibeModel.setPricing(hostId, vibeId, pricing);
-    return vibe;
-  }
-  
-export async function getPricing(hostId: string, vibeId: string) {
-    log.info(`get pricing: hostId=${hostId}, vibeId=${vibeId}`);
+// export async function setName(hostId: string, vibeId: string, name: string) {
+//   log.info(
+//     `set default playlist: hostId=${hostId}, vibeId=${vibeId}, defaultPlaylist=${name}`,
+//   );
 
-    pricing = await VibeModel.getPricing(hostId, vibeId);
-    return pricing;
-  }
-  
+//   const vibe = await VibeModel.setName(hostId, vibeId, name);
+//   return vibe;
+// }
 
-  
-export async function setDefaultPlaylist(hostId: string, vibeId: string, defaultPlaylist: string) {
-    log.info(`set default playlist: hostId=${hostId}, vibeId=${vibeId}, defaultPlaylist=${defaultPlaylist}`);
+// export async function getName(hostId: string, vibeId: string) {
+//   log.info(`get name: hostId=${hostId}, vibeId=${vibeId}`);
 
-    vibe = await VibeModel.setDefaultPlaylist(hostId, vibeId, defaultPlaylist);
-    return vibe;
-  }
-  
-export async function getDefaultPlaylist(hostId: string, vibeId: string) {
-    log.info(`get default playlist: hostId=${hostId}, vibeId=${vibeId}`);
-
-    DefaultPlaylist = await VibeModel.getDefaultPlaylist(hostId, vibeId);
-    return DefaultPlaylist;
-  }
-  
-  
-  
-export async function setName(hostId: string, vibeId: string, name: string) {
-    log.info(`set default playlist: hostId=${hostId}, vibeId=${vibeId}, defaultPlaylist=${name}`);
-
-    vibe = await VibeModel.setName(hostId, vibeId, name);
-    return vibe;
-  }
-  
-export async function getName(hostId: string, vibeId: string) {
-    log.info(`get name: hostId=${hostId}, vibeId=${vibeId}`);
-
-    name = await VibeModel.getName(hostId, vibeId);
-    return name;
-  }
-  
-  
+//   const name = await VibeModel.getName(hostId, vibeId);
+//   return name;
+// }

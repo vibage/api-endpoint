@@ -54,3 +54,14 @@ export async function searchSpotify(req: Request, res: Response) {
   const data = await controller.searchSpotify(id, query);
   res.send(data);
 }
+
+export async function getVibe(req: Request, res: Response) {
+  const { id } = req.params;
+  try {
+    const vibe = await controller.getVibe(id);
+    res.status(200).send(JSON.stringify(vibe));
+  } catch (err) {
+    console.log(err);
+    res.status(400).send(err);
+  }
+}

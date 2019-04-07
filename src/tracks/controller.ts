@@ -94,13 +94,13 @@ export async function nextTrack(userId: string) {
     throw new Error("End of Queue");
   }
 
-  // remove the first track
-  await removeTrack(userId, tracks[0].uri);
-
   // play the next track
   await makeApiRequest("/v1/me/player/play", "PUT", userId, {
-    uris: [tracks[1].uri],
+    uris: [tracks[0].uri],
   });
+
+  // remove the track
+  await removeTrack(userId, tracks[0].uri);
 
   // send tracks to user
   await sendAllTracks(userId);

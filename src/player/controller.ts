@@ -17,11 +17,6 @@ export async function startQueue(userId: string, deviceId: string) {
     return false;
   }
 
-  await makeApiRequest("/v1/me/player/repeat", "PUT", user, { state: "off" });
-  await makeApiRequest("/v1/me/player/shuffle", "PUT", user, {
-    state: "false",
-  });
-
   const tracks = await TrackController.getTracks(userId);
 
   if (tracks.length === 0) {
@@ -38,6 +33,9 @@ export async function startQueue(userId: string, deviceId: string) {
     user,
     payload,
   );
+
+  // remove song from queue
+  await TrackController.removeTrack(userId, tracks[0].uri);
 
   return data;
 }

@@ -2,9 +2,8 @@ import { Document, Model, model, Schema } from "mongoose";
 
 export interface IVibeModel extends Document {
   hostId: string;
-  vibeId: string;
   genres: string;
-  explicit: string;
+  explicit: boolean;
   pricing: string;
   defaultPlaylist: string;
   name: string;
@@ -12,15 +11,11 @@ export interface IVibeModel extends Document {
 
 export const VibeSchema: Schema = new Schema({
   hostId: String,
-  vibeId: String,
   genres: String,
-  explicit: String,
+  explicit: Boolean,
   pricing: String,
   defaultPlaylist: String,
   name: String,
 });
 
-export const Vibe: Model<IVibeModel> = model<IVibeModel>(
-  "vibe",
-  VibeSchema,
-);
+export const Vibe: Model<IVibeModel> = model<IVibeModel>("vibe", VibeSchema);

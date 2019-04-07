@@ -1,10 +1,11 @@
 interface IArtist {
-  name: string
+  name: string;
 }
 
 interface ITrack {
   name: string;
   uri: string;
   id: string;
-  artists: IArtist[]
+  explicit: boolean;
+  artists: IArtist[];
 }

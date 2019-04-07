@@ -3,9 +3,11 @@ import * as HostController from "./host/routes";
 import * as PlayerController from "./player/routes";
 import * as QueuerController from "./queuer/routes";
 import * as TrackController from "./tracks/routes";
+import * as VibeController from "./vibe/routes";
 
 app.post("/spotify", HostController.authorize);
 app.get("/hosts", HostController.getNearbyUsers);
+app.get("/host/:id/vibe", HostController.getVibe);
 app.get("/spotify/getToken/:id", HostController.getToken);
 app.post("/spotify/refresh", HostController.refreshToken);
 app.get("/user/:id/search", HostController.searchSpotify);
@@ -26,6 +28,10 @@ app.put("/player/play", PlayerController.play);
 app.put("/player/pause", PlayerController.pause);
 app.get("/player/:id", PlayerController.getPlayer);
 app.put("/player/state", PlayerController.setPlayer);
+
+app.get("/vibe/:id", VibeController.getVibe);
+app.post("/vibe/:id/setGenre", VibeController.setGenre);
+app.post("/vibe/:id/setExplicit", VibeController.setExplicit);
 
 // // public queue routes
 // app.put("/queue/:id/addTrack", TrackController.addTrack);

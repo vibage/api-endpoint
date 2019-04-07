@@ -5,6 +5,7 @@ export interface IHostModel extends Document {
   spotifyId: string;
   accessToken: string;
   refreshToken: string;
+  vibeId: string;
   player: string;
 }
 
@@ -13,6 +14,7 @@ export const HostSchema: Schema = new Schema({
   accessToken: String,
   refreshToken: String,
   spotifyId: String,
+  vibeId: String,
   player: String,
 });
 

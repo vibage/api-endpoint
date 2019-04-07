@@ -1,6 +1,9 @@
 import { createLogger } from "bunyan";
 import fetch from "node-fetch";
+import { IHostModel } from "../def/host";
+import { IVibeModel, Vibe } from "../def/vibe";
 import { makeApiRequest } from "../utils";
+import * as VibeController from "../vibe/controller";
 import * as HostModel from "./model";
 
 const log = createLogger({
@@ -53,6 +56,9 @@ export async function requestAuthToken(code: string) {
     },
   );
   const playlistInfo = await playlistRes.json();
+
+  // create vibe
+  const vibe = await VibeController.createVibe(userData.id);
 
   // create the user
   const user = await HostModel.createUser(
@@ -117,13 +123,37 @@ export async function searchSpotify(userId: string, query: string) {
   log.info(`Searching: userId=${userId}, query=${query}`);
   // load users settings
 
-  const result = await makeApiRequest(
-    `/v1/search?q=${query}&type=album,artist,track`,
+  const host = (await HostModel.getUser(userId)) as IHostModel;
+
+  if (!host) {
+    throw new Error("Host not found");
+  }
+
+  const result: { tracks: { items: ITrack[] } } = await makeApiRequest(
+    `/v1/search?q=${query}&type=track`,
     "GET",
     userId,
   );
 
-  // filter results based on user settings
+  const vibe = (await VibeController.getVibe(host.vibeId)) as IVibeModel;
 
-  return result;
+  // filter results based on user settings
+  const filteredTracks = result.tracks.items.filter((track) => {
+    if (!vibe.explicit && track.explicit) {
+      return false;
+    }
+    return true;
+  });
+
+  return { tracks: { items: filteredTracks } };
+}
+
+export async function getVibe(hostId: string) {
+  log.info(`Get Vibe: hostId=${hostId}`);
+  const host = await HostModel.getUser(hostId);
+  if (!host) {
+    throw new Error();
+  }
+  const vibe = await VibeController.getVibe(host.vibeId);
+  return vibe;
 }

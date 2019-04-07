@@ -14,6 +14,7 @@ export async function addTrack(
     artist: trackData.artists[0].name,
     name: trackData.name,
     likes: 0,
+    trackData: JSON.stringify(trackData),
   });
   await track.save();
   return track;

@@ -9,6 +9,7 @@ export interface ITrackModel extends Document {
   artist: string;
   name: string;
   likes: number;
+  trackData: string;
 }
 
 export let TrackSchema: Schema = new Schema({
@@ -19,6 +20,7 @@ export let TrackSchema: Schema = new Schema({
   addedBy: String,
   hostId: String,
   likes: Number,
+  trackData: String,
 });
 
 TrackSchema.pre("save", function(next) {
