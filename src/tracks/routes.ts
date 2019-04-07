@@ -40,9 +40,9 @@ export async function getTracks(req: Request, res: Response) {
 }
 
 export async function nextTrack(req: Request, res: Response) {
-  const { hostId } = req.params;
+  const { id } = req.params;
   try {
-    const data = await trackController.nextTrack(hostId);
+    const data = await trackController.nextTrack(id);
     res.status(200).send(data);
   } catch (err) {
     log.error({ err });

@@ -51,7 +51,7 @@ export async function addTrack(
 }
 
 export async function removeTrack(hostId: string, uri: string) {
-  log.info(`Removing track: userId=${hostId}, uri=${uri}`);
+  log.info(`Removing track: hostId=${hostId}, uri=${uri}`);
 
   // get user information
   const user = await HostModel.getUser(hostId);
@@ -103,38 +103,40 @@ export function getTracks(hostId: string) {
   return TrackModel.getTracks(hostId);
 }
 
-export async function nextTrack(userId: string) {
-  log.info("Next Track");
-  const tracks = await getTracks(userId);
+export async function nextTrack(hostId: string) {
+  log.info(`Next Track: hostId=${hostId}`);
+  const tracks = await getTracks(hostId);
 
-  if (tracks.length === 1) {
+  if (tracks.length === 0) {
     throw new Error("End of Queue");
   }
 
+  console.log(tracks);
+
   // play the next track
-  await makeApiRequest("/v1/me/player/play", "PUT", userId, {
+  await makeApiRequest("/v1/me/player/play", "PUT", hostId, {
     uris: [tracks[0].uri],
   });
 
   // remove the track
-  await removeTrack(userId, tracks[0].uri);
+  await removeTrack(hostId, tracks[0].uri);
 
   // send tracks to user
-  await sendAllTracks(userId);
+  await sendAllTracks(hostId);
 
   // send the next track to the user
   return tracks[1];
 }
 
-export async function sendAllTracks(userId: string, tracks?: ITrackModel[]) {
+export async function sendAllTracks(hostId: string, tracks?: ITrackModel[]) {
   const allTracks: ITrackModel[] = await new Promise(async (resolve, rej) => {
     if (tracks) {
       resolve(tracks);
     } else {
-      const loadedTracks = await getTracks(userId);
+      const loadedTracks = await getTracks(hostId);
       resolve(loadedTracks);
     }
   });
 
-  io.to(userId).emit("tracks", allTracks);
+  io.to(hostId).emit("tracks", allTracks);
 }
