@@ -4,17 +4,17 @@ import { RouteWrapper } from "../utils";
 import * as controller from "./controller";
 
 const log = createLogger({
-  name: "Users",
+  name: "Host",
 });
 
-export async function authorize(req: Request, res: Response) {
-  const { code } = req.query;
+export async function createHost(req: Request, res: Response) {
+  const { code, uid, name } = req.body;
   try {
-    const user = await controller.requestAuthToken(code);
-    res.status(200).send(user);
+    const host = await controller.createHost(code, name, uid);
+    res.status(200).send(host);
   } catch (err) {
     log.error({ err });
-    res.status(400).send(err);
+    res.status(400).json(err.message);
   }
 }
 
@@ -35,7 +35,7 @@ export async function getToken(req: Request, res: Response) {
     const token = await controller.getAuthToken(id);
     res.status(200).send(token);
   } catch (err) {
-    console.log(err);
+    log.error(err);
     res.status(400).send(err);
   }
 }
@@ -61,7 +61,7 @@ export async function getVibe(req: Request, res: Response) {
     const vibe = await controller.getVibe(id);
     res.status(200).send(JSON.stringify(vibe));
   } catch (err) {
-    console.log(err);
+    log.error(err);
     res.status(400).send(err);
   }
 }

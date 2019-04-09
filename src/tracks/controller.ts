@@ -1,6 +1,6 @@
 import { createLogger } from "bunyan";
 import { ITrackModel } from "../def/track";
-import * as HostModel from "../host/model";
+import * as HostController from "../host/controller";
 import * as QueuerController from "../queuer/controller";
 import { io } from "../server";
 import * as TrackModel from "../tracks/model";
@@ -22,11 +22,7 @@ export async function addTrack(
   // check if the user had added a track recently based on the companies rules
 
   // get user data
-  const user = await HostModel.getUser(hostId);
-
-  if (!user) {
-    return false;
-  }
+  const host = await HostController.getHost(hostId);
 
   // get amount of tokens to remove for the vibe
 
@@ -37,13 +33,11 @@ export async function addTrack(
   const trackData: ITrack = await makeApiRequest(
     `/v1/tracks/${trackId}`,
     "GET",
-    user,
+    host,
   );
 
   // add track to database
   const track = await TrackModel.addTrack(hostId, trackData, queuerId);
-
-  console.log(track);
 
   // send tracks via socket
   await sendAllTracks(hostId);
@@ -52,13 +46,6 @@ export async function addTrack(
 
 export async function removeTrack(hostId: string, uri: string) {
   log.info(`Removing track: hostId=${hostId}, uri=${uri}`);
-
-  // get user information
-  const user = await HostModel.getUser(hostId);
-
-  if (!user) {
-    throw new Error("User does not exist");
-  }
 
   // remove from database
   await TrackModel.removeTrack(hostId, uri);
@@ -72,6 +59,7 @@ export async function likeTrack(
   queuerId: string,
 ) {
   log.info(`Like: hostId=${hostId}, trackId=${trackId}, queuerId=${queuerId}`);
+
   const like = await TrackModel.likeTrack(hostId, queuerId, trackId);
   sendAllTracks(hostId);
   return like;
@@ -83,20 +71,12 @@ export async function unlikeTrack(
   trackId: string,
 ) {
   log.info(`Unlike: hostId=${hostId} queuerId=${queuerId} trackId=${trackId}`);
+
   await TrackModel.unlikeTrack(queuerId, trackId);
   sendAllTracks(hostId);
   return {
     status: "done",
   };
-}
-
-export async function pay4Track(
-  hostId: string,
-  trackUri: string,
-  userId: string,
-) {
-  const track = await TrackModel.pay4Track(hostId, trackUri, userId);
-  return track;
 }
 
 export function getTracks(hostId: string) {

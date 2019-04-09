@@ -1,21 +1,38 @@
 import { createLogger } from "bunyan";
 import fetch from "node-fetch";
 import { IHostModel } from "../def/host";
-import { IVibeModel, Vibe } from "../def/vibe";
+import { IVibeModel } from "../def/vibe";
 import { makeApiRequest } from "../utils";
 import * as VibeController from "../vibe/controller";
 import * as HostModel from "./model";
 
 const log = createLogger({
-  name: "Users",
+  name: "Host",
 });
 
-export async function requestAuthToken(code: string) {
-  log.info(`Authorizing: code=${code}`);
+export async function getHost(hostId: string): Promise<IHostModel> {
+  const host = await HostModel.getUser(hostId);
+  if (!host) {
+    throw new Error("Host does not exist");
+  }
+  return host;
+}
 
-  const redirectUri = encodeURIComponent(
-    "https://tgt101.com/650Panel/login.html",
-  );
+export function setPlayerState(hostId: string, player: string) {
+  return HostModel.setPlayerState(hostId, player);
+}
+
+export async function createHost(code: string, name: string, uid: string) {
+  log.info(`Creating: code=${code}, name=${name}, uid=${uid}`);
+
+  // check if host with uri already exists
+
+  const hostByUid = await HostModel.getHostByUid(uid);
+  if (hostByUid) {
+    throw new Error("Already made account");
+  }
+
+  const redirectUri = encodeURIComponent("https://fizzle.tgt101.com");
   const response = await fetch("https://accounts.spotify.com/api/token", {
     body:
       `grant_type=authorization_code&code=${code}&redirect_uri=${redirectUri}` +
@@ -26,57 +43,47 @@ export async function requestAuthToken(code: string) {
     },
     method: "POST",
   });
-  const result = await response.json();
+  const tokens: ISpotifyAuth = await response.json();
+
+  console.log(tokens);
 
   // get the user's spotify id
   const userDataRes = await fetch("https://api.spotify.com/v1/me", {
     headers: {
-      Authorization: `Bearer ${result.access_token}`,
+      Authorization: `Bearer ${tokens.access_token}`,
     },
   });
-  const userData = await userDataRes.json();
+  const spotifyUser: ISpotifyUser = await userDataRes.json();
 
-  // create playlist for user
-  const playlistData = {
-    name: "Fizzle List",
-    public: false,
-    description:
-      "Playlist used to see what songs fizzle is playing. Please do not change anything with this",
-  };
+  console.log(spotifyUser);
 
-  const playlistRes = await fetch(
-    `https://api.spotify.com/v1/users/${userData.id}/playlists`,
-    {
-      body: JSON.stringify(playlistData),
-      headers: {
-        "Authorization": `Bearer ${result.access_token}`,
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    },
-  );
-  const playlistInfo = await playlistRes.json();
+  // search to see if host has already made an account
+  // const prevHost = HostModel.doesSpotifyIdExist(spotifyUser.id);
 
-  // create vibe
-  const vibe = await VibeController.createVibe(userData.id);
+  // if (prevHost) {
+  //   log.info("Spotify user already exists");
+  //   return prevHost;
+  // }
+
+  const vibe = await VibeController.createVibe(spotifyUser.id);
 
   // create the user
-  const user = await HostModel.createUser(
-    userData.display_name,
-    userData.id,
-    result.access_token,
-    result.refresh_token,
-    playlistInfo.id,
-    playlistInfo.uri,
+  const host = await HostModel.createUser(
+    name,
+    uid,
+    spotifyUser.id,
+    tokens.access_token,
+    tokens.refresh_token,
+    vibe._id,
   );
 
-  return user;
+  return host;
 }
 
-export async function refreshToken(userId: string) {
-  log.info(`Refresh: userId=${userId}`);
+export async function refreshToken(hostId: string) {
+  log.info(`Refresh: hostId=${hostId}`);
 
-  const user = await HostModel.getUser(userId);
+  const user = await HostModel.getUser(hostId);
 
   if (!user) {
     throw new Error("User not found");
@@ -94,48 +101,36 @@ export async function refreshToken(userId: string) {
   });
   const data = await response.json();
 
-  return await HostModel.setTokens(userId, data.access_token);
+  return await HostModel.setTokens(hostId, data.access_token);
 }
 
-export async function getAuthToken(userId: string) {
-  log.info(`Get Auth Token: userId=${userId}`);
-
-  // make this more efficient later
-  await makeApiRequest("/v1/me", "GET", userId);
+export async function getAuthToken(hostId: string) {
+  log.info(`Get Auth Token: hostId=${hostId}`);
 
   // perform some kind of authorization here
-  const user = await HostModel.getUser(userId);
+  const host = await getHost(hostId);
 
-  if (!user) {
-    throw new Error("User does not exist");
-  }
-
-  // make sure the token still works
-
-  return user.accessToken;
+  return host.accessToken;
 }
 
 export async function getNearbyUsers() {
+  log.info("Get all");
   return HostModel.getAllUsers();
 }
 
-export async function searchSpotify(userId: string, query: string) {
-  log.info(`Searching: userId=${userId}, query=${query}`);
+export async function searchSpotify(hostId: string, query: string) {
+  log.info(`Search: hostId=${hostId}, query=${query}`);
   // load users settings
 
-  const host = (await HostModel.getUser(userId)) as IHostModel;
-
-  if (!host) {
-    throw new Error("Host not found");
-  }
+  const host = await getHost(hostId);
 
   const result: { tracks: { items: ITrack[] } } = await makeApiRequest(
     `/v1/search?q=${query}&type=track`,
     "GET",
-    userId,
+    hostId,
   );
 
-  const vibe = (await VibeController.getVibe(host.vibeId)) as IVibeModel;
+  const vibe = (await VibeController.getVibe(host.currentVibe)) as IVibeModel;
 
   // filter results based on user settings
   const filteredTracks = result.tracks.items.filter((track) => {
@@ -150,10 +145,7 @@ export async function searchSpotify(userId: string, query: string) {
 
 export async function getVibe(hostId: string) {
   log.info(`Get Vibe: hostId=${hostId}`);
-  const host = await HostModel.getUser(hostId);
-  if (!host) {
-    throw new Error();
-  }
-  const vibe = await VibeController.getVibe(host.vibeId);
+  const host = await getHost(hostId);
+  const vibe = await VibeController.getVibe(host.currentVibe);
   return vibe;
 }

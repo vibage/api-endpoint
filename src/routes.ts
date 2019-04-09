@@ -5,7 +5,7 @@ import * as QueuerController from "./queuer/routes";
 import * as TrackController from "./tracks/routes";
 import * as VibeController from "./vibe/routes";
 
-app.post("/spotify", HostController.authorize);
+app.post("/host/register", HostController.createHost);
 app.get("/hosts", HostController.getNearbyUsers);
 app.get("/host/:id/vibe", HostController.getVibe);
 app.get("/spotify/getToken/:id", HostController.getToken);

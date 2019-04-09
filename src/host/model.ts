@@ -2,19 +2,19 @@ import { Host } from "../def/host";
 
 export async function createUser(
   name: string,
+  uid: string,
   spotifyId: string,
   aToken: string,
   rToken: string,
-  playlistId: string,
-  playlistURI: string,
+  vibeId: string,
 ) {
   const user = new Host({
     name,
+    uid,
     spotifyId,
+    vibeId,
     accessToken: aToken,
     refreshToken: rToken,
-    playlistId,
-    playlistURI,
   });
   await user.save();
   return user;
@@ -22,6 +22,19 @@ export async function createUser(
 
 export function getUser(userId: string) {
   return Host.findById(userId);
+}
+
+export function getHostByUid(uid: string) {
+  return Host.findOne({
+    uid,
+  });
+}
+
+export async function doesSpotifyIdExist(spotifyId: string) {
+  const host = await Host.find({
+    spotifyId,
+  });
+  return host[0];
 }
 
 export function getAllUsers() {

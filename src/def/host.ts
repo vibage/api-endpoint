@@ -2,19 +2,21 @@ import { Document, Model, model, Schema } from "mongoose";
 
 export interface IHostModel extends Document {
   name: string;
+  uid: string;
   spotifyId: string;
   accessToken: string;
   refreshToken: string;
-  vibeId: string;
+  currentVibe: string;
   player: string;
 }
 
 export const HostSchema: Schema = new Schema({
   name: String,
+  uid: String,
   accessToken: String,
   refreshToken: String,
   spotifyId: String,
-  vibeId: String,
+  currentVibe: String,
   player: String,
 });
 
