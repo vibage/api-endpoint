@@ -72,14 +72,3 @@ export async function unlikeTrack(req: Request, res: Response) {
     res.status(400).send(err);
   }
 }
-
-export async function pay4Track(req: Request, res: Response) {
-  const { hostId, trackUri, userId } = req.body;
-  try {
-    const track = await trackController.pay4Track(hostId, trackUri, userId);
-    res.status(200).send(track);
-  } catch (err) {
-    log.error({ err });
-    res.status(400);
-  }
-}

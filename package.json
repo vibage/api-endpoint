@@ -12,6 +12,10 @@
     "watch:build": "tsc -w",
     "test": "jest"
   },
+  "engines": {
+    "node": "10.3.0",
+    "npm": "6.x"
+  },
   "jest": {
     "moduleFileExtensions": [
       "ts",
