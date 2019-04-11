@@ -25,7 +25,6 @@ export async function likeTrack(
   queuerId: string,
   trackId: string,
 ) {
-  // create and save like
   const like = new TrackLike({
     hostId,
     trackId,

@@ -1,74 +1,96 @@
-import { createLogger } from "bunyan";
+import { NextFunction } from "connect";
 import { Request, Response } from "express";
+import { AsyncRouteWrapper } from "../utils";
 import * as trackController from "./controller";
 
-const log = createLogger({
-  name: "Track",
-});
-
-export async function addTrack(req: Request, res: Response) {
-  const { hostId, trackId, queuerId } = req.body;
-  try {
-    const track = await trackController.addTrack(hostId, trackId, queuerId);
-    res.status(200).send(JSON.stringify(track));
-  } catch (err) {
-    log.error({ err });
-    res.status(400).send(err);
-  }
-}
-
-export async function removeTrack(req: Request, res: Response) {
-  const { hostId, uri } = req.body;
-  try {
-    const track = await trackController.removeTrack(hostId, uri);
-    res.status(200).send(JSON.stringify(track));
-  } catch (err) {
-    log.error({ err });
-    res.status(400).send(err);
-  }
-}
-
-export async function getTracks(req: Request, res: Response) {
+export function addTrack(req: Request, res: Response, next: NextFunction) {
+  const { trackId, queuerId } = req.body;
   const { id } = req.params;
-  try {
-    const tracks = await trackController.getTracks(id);
-    res.status(200).send(JSON.stringify(tracks));
-  } catch (err) {
-    log.error({ err });
-    res.status(400).send(err);
-  }
+  const track = trackController.addTrack(id, trackId, queuerId);
+  AsyncRouteWrapper(track, res, next);
 }
 
-export async function nextTrack(req: Request, res: Response) {
+export function likeTrack(req: Request, res: Response, next: NextFunction) {
+  const { id, trackId } = req.params;
+  const { uid } = req.body;
+  const track = trackController.likeTrack(uid, id, trackId);
+  AsyncRouteWrapper(track, res, next);
+}
+
+export function unlikeTrack(req: Request, res: Response, next: NextFunction) {
+  const { uid, hostId, trackId } = req.body;
+  const track = trackController.likeTrack(uid, hostId, trackId);
+  AsyncRouteWrapper(track, res, next);
+}
+
+export function getTracks(req: Request, res: Response, next: NextFunction) {
   const { id } = req.params;
-  try {
-    const data = await trackController.nextTrack(id);
-    res.status(200).send(data);
-  } catch (err) {
-    log.error({ err });
-    res.status(400).send(err);
-  }
+  const track = trackController.getTracks(id);
+  AsyncRouteWrapper(track, res, next);
 }
 
-export async function likeTrack(req: Request, res: Response) {
-  const { hostId, trackId, queuerId } = req.body;
-  try {
-    const like = await trackController.likeTrack(hostId, trackId, queuerId);
-    res.status(200).send(like);
-  } catch (err) {
-    log.error({ err });
-    res.status(400).send(err);
-  }
+export function getPlayer(req: Request, res: Response, next: NextFunction) {
+  const { id } = req.params;
+  const player = trackController.getPlayer(id);
+  AsyncRouteWrapper(player, res, next);
 }
 
-export async function unlikeTrack(req: Request, res: Response) {
-  const { queuerId, hostId } = req.body;
-  const { trackId } = req.params;
-  try {
-    const like = await trackController.unlikeTrack(hostId, trackId, queuerId);
-    res.status(200).send(like);
-  } catch (err) {
-    log.error({ err });
-    res.status(400).send(err);
-  }
+export function search(req: Request, res: Response, next: NextFunction) {
+  const { id } = req.params;
+  const { q } = req.query;
+  const tracks = trackController.search(id, q);
+  AsyncRouteWrapper(tracks, res, next);
+}
+
+/*========================================
+     Host Functions
+==========================================*/
+
+export function startQueue(req: Request, res: Response, next: NextFunction) {
+  const { uid, deviceId } = req.body;
+  const tracks = trackController.startQueue(uid, deviceId);
+  AsyncRouteWrapper(tracks, res, next);
+}
+
+export function setPlayerState(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const { uid, player } = req.body;
+  const tracks = trackController.setPlayerState(uid, player);
+  AsyncRouteWrapper(tracks, res, next);
+}
+
+export function play(req: Request, res: Response, next: NextFunction) {
+  const { uid } = req.body;
+  const tracks = trackController.play(uid);
+  AsyncRouteWrapper(tracks, res, next);
+}
+
+export function pause(req: Request, res: Response, next: NextFunction) {
+  const { uid } = req.body;
+  const tracks = trackController.pause(uid);
+  AsyncRouteWrapper(tracks, res, next);
+}
+
+export async function removeTrack(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const { uri } = req.params;
+  const { uid } = req.body;
+  const tracks = trackController.removeTrack(uid, uri);
+  AsyncRouteWrapper(tracks, res, next);
+}
+
+export async function nextTrack(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const { uid } = req.body;
+  const tracks = trackController.nextTrack(uid);
+  AsyncRouteWrapper(tracks, res, next);
 }

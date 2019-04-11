@@ -18,4 +18,5 @@ interface ISpotifyUser {
 interface ISpotifyAuth {
   access_token: string;
   refresh_token: string;
+  error?: any;
 }

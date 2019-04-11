@@ -13,7 +13,7 @@
     "test": "jest"
   },
   "engines": {
-    "node": "10.3.0",
+    "node": "10.15.3",
     "npm": "6.x"
   },
   "jest": {

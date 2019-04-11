@@ -17,9 +17,13 @@ export async function removeVibe(vibeId: string) {
   return vibe;
 }
 
-export async function getVibe(vibeId: string) {
+export async function getVibe(vibeId: string | undefined) {
   log.info(`Get: vibeId=${vibeId}`);
+  if (!vibeId) { return null; }
   const vibe = await VibeModel.getVibe(vibeId);
+  if (!vibe) {
+    throw new Error("Vibe does not exist");
+  }
   return vibe;
 }
 
