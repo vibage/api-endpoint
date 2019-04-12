@@ -19,6 +19,16 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
   AsyncRouteWrapper(user, res, next);
 }
 
+export async function refreshAuthToken(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const { uid } = req.body;
+  const user = userController.refreshAuthToken(uid);
+  AsyncRouteWrapper(user, res, next);
+}
+
 export async function getActiveHosts(
   req: Request,
   res: Response,
@@ -43,7 +53,7 @@ export async function getLikes(
   res: Response,
   next: NextFunction,
 ) {
-  const { id } = req.body;
+  const { id } = req.params;
   const likes = userController.getLikes(id);
   AsyncRouteWrapper(likes, res, next);
 }

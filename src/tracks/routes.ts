@@ -6,7 +6,7 @@ import * as trackController from "./controller";
 export function addTrack(req: Request, res: Response, next: NextFunction) {
   const { trackId, queuerId } = req.body;
   const { id } = req.params;
-  const track = trackController.addTrack(id, trackId, queuerId);
+  const track = trackController.addTrack(queuerId, id, trackId);
   AsyncRouteWrapper(track, res, next);
 }
 
@@ -18,8 +18,9 @@ export function likeTrack(req: Request, res: Response, next: NextFunction) {
 }
 
 export function unlikeTrack(req: Request, res: Response, next: NextFunction) {
-  const { uid, hostId, trackId } = req.body;
-  const track = trackController.likeTrack(uid, hostId, trackId);
+  const { id, trackId } = req.params;
+  const { uid } = req.body;
+  const track = trackController.unlikeTrack(uid, id, trackId);
   AsyncRouteWrapper(track, res, next);
 }
 
@@ -79,9 +80,9 @@ export async function removeTrack(
   res: Response,
   next: NextFunction,
 ) {
-  const { uri } = req.params;
+  const { id } = req.params;
   const { uid } = req.body;
-  const tracks = trackController.removeTrack(uid, uri);
+  const tracks = trackController.removeTrack(uid, id);
   AsyncRouteWrapper(tracks, res, next);
 }
 

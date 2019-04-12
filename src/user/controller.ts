@@ -30,7 +30,9 @@ export async function refreshAuthToken(uid: string) {
   });
   const data: ISpotifyAuth = await response.json();
 
-  return await UserModel.setToken(user.id, data.access_token);
+  const updatedUser = await UserModel.setToken(user.id, data.access_token);
+
+  return updatedUser;
 }
 
 // this function is acting as authentication for right now

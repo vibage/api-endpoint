@@ -89,7 +89,7 @@ export async function getPlayer(hostId: string) {
     return null;
   }
 
-  io.to(hostId).emit("player", JSON.parse(host.player));
+  return host.player;
 }
 
 export async function search(hostId: string, query: string) {
@@ -129,6 +129,8 @@ export async function search(hostId: string, query: string) {
 ==========================================*/
 
 export async function startQueue(uid: string, deviceId: string) {
+  log.info(`Start: uid=${uid}, deviceId=${deviceId}`);
+
   // will error if user doesn't have the correct uid
   const host = await UserController.getUser(uid);
 
@@ -141,6 +143,20 @@ export async function startQueue(uid: string, deviceId: string) {
 
   // check the host's player context to see if they were playing a song before
   // and if they were restore it to the correct place
+
+  // if (host.player) {
+  //   log.info("Resuming user's play back");
+  //   // just send a play request and it should pick up where it left off
+  //   await makeApiRequest(
+  //     `/v1/me/player/play?device_id=${deviceId}`,
+  //     "PUT",
+  //     host as IUserModel,
+  //   );
+
+  //   return {
+  //     status: "done",
+  //   };
+  // }
 
   const tracks = await getTracks(host.id);
 
@@ -161,14 +177,21 @@ export async function startQueue(uid: string, deviceId: string) {
     payload,
   );
 
-  await removeTrack(host.id, tracks[0].uri);
+  await removeTrack(host.uid, tracks[0].id);
 
   return data;
 }
 
-export async function setPlayerState(uid: string, player: string) {
+export async function setPlayerState(uid: string, player: object) {
   const host = await UserController.getUser(uid);
-  return UserModel.setPlayerState(host.id, player);
+
+  io.to(host.id).emit("player", host.player);
+
+  await UserModel.setPlayerState(host.id, player);
+
+  return {
+    status: "done",
+  };
 }
 
 export async function play(uid: string) {
@@ -189,21 +212,21 @@ export async function pause(uid: string) {
   return data;
 }
 
-export async function removeTrack(uid: string, uri: string) {
-  log.info(`Remove: uid=${uid}, uri=${uri}`);
+export async function removeTrack(uid: string, trackId: string) {
+  log.info(`Remove: uid=${uid}, trackId=${trackId}`);
 
   // auth host
   const host = await UserController.getUser(uid);
 
   // remove from database
-  const track = await TrackModel.removeTrack(host.id, uri);
+  const track = await TrackModel.removeTrack(trackId);
 
   await sendAllTracks(host.id);
   return track;
 }
 
 export async function nextTrack(uid: string) {
-  log.info(`Next Track: hostUid=${uid}`);
+  log.info(`Next Track: uid=${uid}`);
 
   const host = await UserController.getUser(uid);
 
@@ -219,7 +242,7 @@ export async function nextTrack(uid: string) {
   });
 
   // remove the track
-  await removeTrack(host.id, tracks[0].uri);
+  await removeTrack(host.uid, tracks[0].id);
 
   // send tracks to user
   await sendAllTracks(host.id);
@@ -229,6 +252,7 @@ export async function nextTrack(uid: string) {
 }
 
 async function sendAllTracks(hostId: string, tracks?: ITrackModel[]) {
+  log.info("Sending all tracks");
   const allTracks: ITrackModel[] = await new Promise(async (resolve, rej) => {
     if (tracks) {
       resolve(tracks);

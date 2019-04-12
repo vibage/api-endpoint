@@ -4,13 +4,12 @@ import { TrackLike } from "../def/trackLike";
 export async function addTrack(
   hostId: string,
   trackData: ITrack,
-  queuerId: string,
+  addedBy: string,
 ) {
   const track = new Track({
     hostId,
-    queuerId,
+    addedBy,
     uri: trackData.uri,
-    id: trackData.id,
     artist: trackData.artists[0].name,
     name: trackData.name,
     likes: 0,
@@ -40,7 +39,7 @@ export async function likeTrack(
   return like;
 }
 
-export async function unlikeTrack(trackId: string, queuerId: string) {
+export async function unlikeTrack(queuerId: string, trackId: string) {
   await TrackLike.findOneAndDelete({
     trackId,
     queuerId,
@@ -51,11 +50,8 @@ export async function unlikeTrack(trackId: string, queuerId: string) {
   });
 }
 
-export function removeTrack(hostId: string, trackUri: string) {
-  return Track.findOneAndDelete({
-    hostId,
-    uri: trackUri,
-  });
+export function removeTrack(trackId: string) {
+  return Track.findByIdAndDelete(trackId);
 }
 
 export async function getTracks(hostId: string) {

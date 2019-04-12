@@ -50,7 +50,7 @@ export async function setQueueState(userId: string, isOn: boolean) {
   return user;
 }
 
-export async function setPlayerState(id: string, player: string) {
+export async function setPlayerState(id: string, player: object) {
   const user = await User.findByIdAndUpdate(id, {
     player,
   });

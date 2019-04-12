@@ -6,8 +6,9 @@ import * as VibeController from "./vibe/routes";
 // user commands
 app.get("/user/:id", UserController.getUser);
 app.put("/user", UserController.createUser);
+app.post("/user/refresh", UserController.refreshAuthToken);
 app.post("/user/spotify", UserController.addSpotifyData);
-app.get("/user/likes", UserController.getLikes);
+app.get("/user/:id/likes", UserController.getLikes);
 app.get("/user/tokens", UserController.getLikes);
 
 // listener commands
@@ -24,7 +25,8 @@ app.post("/queue/start", TrackController.startQueue);
 app.put("/queue/state", TrackController.setPlayerState);
 app.put("/queue/play", TrackController.play);
 app.put("/queue/pause", TrackController.pause);
-app.delete("/queue/track/:uri", TrackController.removeTrack);
+// make this a delete request later
+app.post("/queue/rmTrack/:id", TrackController.removeTrack);
 app.post("/queue/next", TrackController.nextTrack);
 
 // vibe commands

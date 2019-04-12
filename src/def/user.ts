@@ -11,7 +11,7 @@ export interface IUser {
   accessToken?: string;
   refreshToken?: string;
   currentVibe?: string;
-  player?: string;
+  player?: object;
   tokens: number;
 }
 
@@ -25,7 +25,7 @@ export const UserSchema: Schema = new Schema({
   refreshToken: String,
   spotifyId: String,
   currentVibe: String,
-  player: String,
+  player: Object,
   tokens: Number,
 });
 
