@@ -126,6 +126,15 @@ export async function addTokens(userId: string, num: number) {
   return user;
 }
 
+export async function setVibe(uid: string, vibeId: string) {
+  log.info(`Set vibe: uid=${uid}, vibeId=${vibeId}`);
+
+  const user = await getUser(uid);
+
+  const res = await UserModel.setVibe(user.id, vibeId);
+  return res;
+}
+
 export async function removeUserTokens(userId: string, num: number) {
   log.info(`Remove Token: userId=${userId}, num=${num}`);
 

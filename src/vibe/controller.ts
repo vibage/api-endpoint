@@ -19,7 +19,9 @@ export async function removeVibe(vibeId: string) {
 
 export async function getVibe(vibeId: string | undefined) {
   log.info(`Get: vibeId=${vibeId}`);
-  if (!vibeId) { return null; }
+  if (!vibeId) {
+    return null;
+  }
   const vibe = await VibeModel.getVibe(vibeId);
   if (!vibe) {
     throw new Error("Vibe does not exist");
@@ -41,4 +43,11 @@ export async function setExplicit(vibeId: string, explicit: boolean) {
 
   const vibe = await VibeModel.setExplicit(vibeId, explicit);
   return vibe;
+}
+
+export async function getPopular() {
+  // just return all vibes for now, later we will make it where there are
+  // different catagories of vibes you can choose from
+  const vibes = await VibeModel.getAll();
+  return vibes;
 }

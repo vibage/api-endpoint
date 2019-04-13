@@ -57,3 +57,9 @@ export async function getLikes(
   const likes = userController.getLikes(id);
   AsyncRouteWrapper(likes, res, next);
 }
+
+export async function setVibe(req: Request, res: Response, next: NextFunction) {
+  const { uid, vibeId } = req.body;
+  const likes = userController.setVibe(uid, vibeId);
+  AsyncRouteWrapper(likes, res, next);
+}

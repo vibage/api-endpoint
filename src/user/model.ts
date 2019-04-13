@@ -39,6 +39,7 @@ export async function setSpotifyData(
     spotifyId,
     accessToken,
     refreshToken,
+    currentVibe: "5cacf99fe841dc03f351150e", // this is the default vibe
   });
   return user;
 }
@@ -75,16 +76,22 @@ export async function getActiveHosts() {
 }
 
 export async function getLikes(queuerId: string) {
-  const query = {
+  const likes = await TrackLike.find({
     queuerId,
-  };
-  const likes = await TrackLike.find(query);
+  });
   return likes;
 }
 
 export async function addTokens(userId: string, tokens: number) {
   const user = await User.findByIdAndUpdate(userId, {
     $inc: { tokens },
+  });
+  return user;
+}
+
+export async function setVibe(userId: string, vibeId: string) {
+  const user = await User.findByIdAndUpdate(userId, {
+    currentVibe: vibeId,
   });
   return user;
 }
