@@ -32,3 +32,7 @@ export function setExplicit(vibeId: string, explicit: boolean) {
     explicit,
   });
 }
+
+export function getAll() {
+  return Vibe.find({});
+}

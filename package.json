@@ -4,16 +4,17 @@
   "description": "",
   "main": "dist/server.js",
   "scripts": {
-    "start": "node dist/server.js | bunyan -o short",
+    "start": "node dist/server.js | bunyan -o simple",
     "start:prod": "npm run build && NODE_ENV=prod npm run start",
     "start:dev": "yarn install && npm-run-all --parallel watch:server watch:build",
     "build": "tsc",
     "watch:server": "nodemon dist/server.js | bunyan -o short",
     "watch:build": "tsc -w",
-    "test": "jest"
+    "test": "jest",
+    "bun": "bunyan --help"
   },
   "engines": {
-    "node": "10.3.0",
+    "node": "10.15.3",
     "npm": "6.x"
   },
   "jest": {

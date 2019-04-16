@@ -5,7 +5,6 @@ export interface ITrackModel extends Document {
   addedBy: string;
   hostId: string;
   addedAt: Date;
-  id: string;
   artist: string;
   name: string;
   likes: number;
@@ -14,7 +13,6 @@ export interface ITrackModel extends Document {
 
 export let TrackSchema: Schema = new Schema({
   uri: String,
-  id: String,
   name: String,
   artist: String,
   addedBy: String,
