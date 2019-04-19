@@ -13,5 +13,4 @@ RUN yarn build
 
 EXPOSE 3000
 
-# Run app.py when the container launches
 CMD ["npm", "start"]

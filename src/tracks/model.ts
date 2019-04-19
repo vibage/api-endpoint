@@ -1,6 +1,10 @@
 import { Track } from "../def/track";
 import { TrackLike } from "../def/trackLike";
 
+export function getTrack(trackId: string) {
+  return Track.findById(trackId);
+}
+
 export async function addTrack(
   hostId: string,
   trackData: ITrack,

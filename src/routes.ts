@@ -29,6 +29,7 @@ app.put("/queue/pause", TrackController.pause);
 // make this a delete request later
 app.post("/queue/rmTrack/:id", TrackController.removeTrack);
 app.post("/queue/next", TrackController.nextTrack);
+app.put("/queue/playTrack", TrackController.playTrack);
 
 // vibe commands
 app.get("/vibe/pop", VibeController.getPopular);

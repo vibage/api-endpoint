@@ -23,7 +23,7 @@ export async function addTrack(uid: string, hostId: string, trackId: string) {
   const host = await UserController.getUserById(hostId);
 
   // auth the user
-  const user = await UserController.getUser(uid);
+  const user = await UserController.authUser(uid);
 
   // get amount of tokens to remove for the vibe
   // check if the user had added a track recently based on the companies rules
@@ -49,7 +49,7 @@ export async function addTrack(uid: string, hostId: string, trackId: string) {
 export async function likeTrack(uid: string, hostId: string, trackId: string) {
   log.info(`Like: uid=${uid} hostId=${hostId}, trackId=${trackId}`);
 
-  const queuer = await UserController.getUser(uid);
+  const queuer = await UserController.authUser(uid);
 
   await TrackModel.likeTrack(hostId, queuer.id, trackId);
   sendAllTracks(hostId);
@@ -66,7 +66,7 @@ export async function unlikeTrack(
   log.info(`Unlike: uid=${uid} hostId=${hostId} trackId=${trackId}`);
 
   // authenticate
-  const queuer = await UserController.getUser(uid);
+  const queuer = await UserController.authUser(uid);
 
   await TrackModel.unlikeTrack(queuer.id, trackId);
   sendAllTracks(hostId);
@@ -132,7 +132,7 @@ export async function startQueue(uid: string, deviceId: string) {
   log.info(`Start: uid=${uid}, deviceId=${deviceId}`);
 
   // will error if user doesn't have the correct uid
-  const host = await UserController.getUser(uid);
+  const host = await UserController.authUser(uid);
 
   // user is a host
   if (!host.spotifyId) {
@@ -183,7 +183,7 @@ export async function startQueue(uid: string, deviceId: string) {
 }
 
 export async function setPlayerState(uid: string, player: object) {
-  const host = await UserController.getUser(uid);
+  const host = await UserController.authUser(uid);
 
   io.to(host.id).emit("player", host.player);
 
@@ -197,7 +197,7 @@ export async function setPlayerState(uid: string, player: object) {
 export async function play(uid: string) {
   log.info(`Play: uid=${uid}`);
 
-  const host = await UserController.getUser(uid);
+  const host = await UserController.authUser(uid);
   const data = await makeApiRequest("/v1/me/player/play", "PUT", host.id);
 
   return data;
@@ -206,7 +206,7 @@ export async function play(uid: string) {
 export async function pause(uid: string) {
   log.info(`Play: uid=${uid}`);
 
-  const host = await UserController.getUser(uid);
+  const host = await UserController.authUser(uid);
   const data = await makeApiRequest("/v1/me/player/pause", "PUT", host.id);
 
   return data;
@@ -216,7 +216,7 @@ export async function removeTrack(uid: string, trackId: string) {
   log.info(`Remove: uid=${uid}, trackId=${trackId}`);
 
   // auth host
-  const host = await UserController.getUser(uid);
+  const host = await UserController.authUser(uid);
 
   // remove from database
   const track = await TrackModel.removeTrack(trackId);
@@ -228,7 +228,7 @@ export async function removeTrack(uid: string, trackId: string) {
 export async function nextTrack(uid: string) {
   log.info(`Next Track: uid=${uid}`);
 
-  const host = await UserController.getUser(uid);
+  const host = await UserController.authUser(uid);
 
   const tracks = await getTracks(host.id);
 
@@ -249,6 +249,33 @@ export async function nextTrack(uid: string) {
 
   // send the next track to the user
   return tracks[1];
+}
+
+export async function playCertainTrack(uid: string, trackId: string) {
+  log.info(`Play Track: uid=${uid} trackId=${trackId}`);
+
+  const host = await UserController.authUser(uid);
+
+  const track = await TrackModel.getTrack(trackId);
+
+  if (!track) {
+    throw new Error("Track does not exist");
+  }
+
+  // play the next track
+  await makeApiRequest("/v1/me/player/play", "PUT", host, {
+    uris: [track.uri],
+  });
+
+  // remove the track
+  await removeTrack(host.uid, track.id);
+
+  // send tracks to user
+  await sendAllTracks(host.id);
+
+  return {
+    status: "done",
+  };
 }
 
 async function sendAllTracks(hostId: string, tracks?: ITrackModel[]) {

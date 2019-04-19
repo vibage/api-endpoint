@@ -95,3 +95,13 @@ export async function nextTrack(
   const tracks = trackController.nextTrack(uid);
   AsyncRouteWrapper(tracks, res, next);
 }
+
+export async function playTrack(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const { uid, trackId } = req.body;
+  const result = trackController.playCertainTrack(uid, trackId);
+  AsyncRouteWrapper(result, res, next);
+}

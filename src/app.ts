@@ -1,7 +1,14 @@
 import * as bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
+import { config } from "dotenv";
 import express from "express";
+import path from "path";
 export const app = express();
+
+// configure environment variables
+const envPath = path.join(__dirname, `../dotenv/${process.env.NODE_ENV}.env`);
+console.log("Path:", envPath);
+config({ path: envPath });
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());

@@ -3,10 +3,11 @@ import mongoose from "mongoose";
 
 const log = createLogger({ name: "DB" });
 
-const uri =
-  process.env.NODE_ENV === "prod"
-    ? "mongodb+srv://admin:admin@cluster0-aligf.mongodb.net/devices?retryWrites=true"
-    : "mongodb://mongodb:27017/local";
+const uri = process.env.MONGO_URI;
+
+if (!uri) {
+  throw new Error("No mongo uri!");
+}
 
 mongoose.connect(uri, { useNewUrlParser: true }).then(
   () => {
@@ -17,3 +18,10 @@ mongoose.connect(uri, { useNewUrlParser: true }).then(
     throw err;
   },
 );
+
+// const Firestore = require("@google-cloud/firestore");
+
+// const db = new Firestore({
+//   projectId: "vibage",
+//   keyFilename: "/path/to/keyfile.json",
+// });

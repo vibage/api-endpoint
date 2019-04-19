@@ -16,7 +16,7 @@ export function createUser(uid: string, name: string) {
 export async function refreshAuthToken(uid: string) {
   log.info(`Refresh: uid=${uid}`);
 
-  const user = await getUser(uid);
+  const user = await authUser(uid);
 
   const response = await fetch("https://accounts.spotify.com/api/token", {
     body: `grant_type=refresh_token&refresh_token=${
@@ -38,6 +38,15 @@ export async function refreshAuthToken(uid: string) {
 // this function is acting as authentication for right now
 export async function getUser(uid: string) {
   log.info(`Get: uid=${uid}`);
+  const user = await UserModel.getUserByUid(uid);
+  if (!user) {
+    return null;
+  }
+  return user;
+}
+
+export async function authUser(uid: string) {
+  log.info(`Auth: uid=${uid}`);
   const user = await UserModel.getUserByUid(uid);
   if (!user) {
     throw new Error("Not authorized");
@@ -69,7 +78,7 @@ export async function addSpot(uid: string, code: string) {
   log.info(`Creating: uid=${uid} code=${code}`);
 
   // make sure the user exists
-  const user = await getUser(uid);
+  const user = await authUser(uid);
 
   const redirectUri = encodeURIComponent("https://fizzle.tgt101.com");
   const response = await fetch("https://accounts.spotify.com/api/token", {
@@ -129,7 +138,7 @@ export async function addTokens(userId: string, num: number) {
 export async function setVibe(uid: string, vibeId: string) {
   log.info(`Set vibe: uid=${uid}, vibeId=${vibeId}`);
 
-  const user = await getUser(uid);
+  const user = await authUser(uid);
 
   const res = await UserModel.setVibe(user.id, vibeId);
   return res;
