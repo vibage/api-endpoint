@@ -99,7 +99,7 @@ export async function search(hostId: string, query: string) {
   const host = await UserController.getUserById(hostId);
 
   const result: { tracks: { items: ITrack[] } } = await makeApiRequest(
-    `/v1/search?q=${query}&type=track`,
+    `/v1/search?q=${query}&type=track&market=US`,
     "GET",
     hostId,
   );
@@ -143,49 +143,34 @@ export async function startQueue(uid: string, deviceId: string) {
 
   // check the host's player context to see if they were playing a song before
   // and if they were restore it to the correct place
+  if (host.player) {
+    log.info("Resuming user's play back");
 
-  // if (host.player) {
-  //   log.info("Resuming user's play back");
-  //   // just send a play request and it should pick up where it left off
-  //   await makeApiRequest(
-  //     `/v1/me/player/play?device_id=${deviceId}`,
-  //     "PUT",
-  //     host as IUserModel,
-  //   );
+    const payload = {
+      uris: [host.player.track_window.current_track.uri],
+      position_ms: host.player.position,
+    };
 
-  //   return {
-  //     status: "done",
-  //   };
-  // }
+    // just send a play request and it should pick up where it left off
+    const res = await makeApiRequest(
+      `/v1/me/player/play?device_id=${deviceId}`,
+      "PUT",
+      host as IUserModel,
+      payload,
+    );
 
-  const tracks = await getTracks(host.id);
-
-  // check host's setting to see if they want to play something else if
-  // there is not something in the queue
-  if (tracks.length === 0) {
-    throw new Error("Queue empty");
+    return res;
+  } else {
+    // check host's setting to see if they want to play something else if
+    // there is not something in the queue
+    nextTrack(uid);
   }
-
-  const payload = {
-    uris: [tracks[0].uri],
-  };
-
-  const data = await makeApiRequest(
-    `/v1/me/player/play?device_id=${deviceId}`,
-    "PUT",
-    host as IUserModel,
-    payload,
-  );
-
-  await removeTrack(host.uid, tracks[0].id);
-
-  return data;
 }
 
 export async function setPlayerState(uid: string, player: object) {
   const host = await UserController.authUser(uid);
 
-  io.to(host.id).emit("player", host.player);
+  io.to(host.id).emit("player", player);
 
   await UserModel.setPlayerState(host.id, player);
 

@@ -20,3 +20,13 @@ interface ISpotifyAuth {
   refresh_token: string;
   error?: any;
 }
+
+interface IPlayerState {
+  duration: number;
+  position: number;
+  track_window: {
+    current_track: {
+      uri: string;
+    };
+  };
+}

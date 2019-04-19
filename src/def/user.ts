@@ -11,7 +11,7 @@ export interface IUser {
   accessToken?: string;
   refreshToken?: string;
   currentVibe?: string;
-  player?: object;
+  player?: IPlayerState;
   tokens: number;
 }
 
