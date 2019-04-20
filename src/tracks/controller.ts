@@ -1,6 +1,6 @@
 import { createLogger } from "bunyan";
 import { ITrackModel } from "../def/track";
-import { IUserModel } from "../def/user";
+import { IUserModel, User } from "../def/user";
 import { io } from "../server";
 import * as TrackModel from "../tracks/model";
 import * as UserController from "../user/controller";
@@ -25,6 +25,19 @@ export async function addTrack(uid: string, hostId: string, trackId: string) {
   // auth the user
   const user = await UserController.authUser(uid);
 
+  // get host vibe
+  const vibe = await VibeController.getVibe(host.currentVibe);
+
+  // the user can't add the track bc of vibe settings
+  if (vibe && !vibe.canUserAddTrack) {
+    // maybe try to return errors with this convention
+    return {
+      error: true,
+      code: 400,
+      message: "Host has disabled adding songs",
+    };
+  }
+
   // get amount of tokens to remove for the vibe
   // check if the user had added a track recently based on the companies rules
 
@@ -43,7 +56,11 @@ export async function addTrack(uid: string, hostId: string, trackId: string) {
 
   // send tracks via socket
   await sendAllTracks(host.id);
-  return track;
+
+  return {
+    action: "DTK",
+    amount: 1,
+  };
 }
 
 export async function likeTrack(uid: string, hostId: string, trackId: string) {
@@ -131,8 +148,9 @@ export async function search(hostId: string, query: string) {
 export async function startQueue(uid: string, deviceId: string) {
   log.info(`Start: uid=${uid}, deviceId=${deviceId}`);
 
-  // will error if user doesn't have the correct uid
   const host = await UserController.authUser(uid);
+
+  await UserController.setDeviceId(host.id, deviceId);
 
   // user is a host
   if (!host.spotifyId) {
@@ -183,7 +201,11 @@ export async function play(uid: string) {
   log.info(`Play: uid=${uid}`);
 
   const host = await UserController.authUser(uid);
-  const data = await makeApiRequest("/v1/me/player/play", "PUT", host.id);
+  const data = await makeApiRequest(
+    `/v1/me/player/play?device_id=${host.deviceId}`,
+    "PUT",
+    host.id,
+  );
 
   return data;
 }
@@ -217,14 +239,21 @@ export async function nextTrack(uid: string) {
 
   const tracks = await getTracks(host.id);
 
+  console.log({ host, tracks });
+
   if (tracks.length === 0) {
     throw new Error("End of Queue");
   }
 
   // play the next track
-  await makeApiRequest("/v1/me/player/play", "PUT", host, {
-    uris: [tracks[0].uri],
-  });
+  await makeApiRequest(
+    `/v1/me/player/play?device_id=${host.deviceId}`,
+    "PUT",
+    host,
+    {
+      uris: [tracks[0].uri],
+    },
+  );
 
   // remove the track
   await removeTrack(host.uid, tracks[0].id);
@@ -248,9 +277,14 @@ export async function playCertainTrack(uid: string, trackId: string) {
   }
 
   // play the next track
-  await makeApiRequest("/v1/me/player/play", "PUT", host, {
-    uris: [track.uri],
-  });
+  await makeApiRequest(
+    `/v1/me/player/play?device_id=${host.deviceId}`,
+    "PUT",
+    host,
+    {
+      uris: [track.uri],
+    },
+  );
 
   // remove the track
   await removeTrack(host.uid, track.id);

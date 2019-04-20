@@ -65,6 +65,13 @@ export async function setToken(id: string, aToken: string) {
   return user;
 }
 
+export async function setDeviceId(id: string, deviceId: string) {
+  const user = await User.findByIdAndUpdate(id, {
+    deviceId,
+  });
+  return user;
+}
+
 export async function getActiveHosts() {
   const users = await User.find(
     {

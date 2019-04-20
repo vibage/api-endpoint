@@ -144,6 +144,11 @@ export async function setVibe(uid: string, vibeId: string) {
   return res;
 }
 
+export function setDeviceId(id: string, deviceId: string) {
+  log.info(`Set device_id: id=${id}, deviceId=${deviceId}`);
+  return UserModel.setDeviceId(id, deviceId);
+}
+
 export async function removeUserTokens(userId: string, num: number) {
   log.info(`Remove Token: userId=${userId}, num=${num}`);
 

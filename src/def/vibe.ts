@@ -5,6 +5,7 @@ export interface IVibeModel extends Document {
   genres: string;
   explicit: boolean;
   pricing: string;
+  canUserAddTrack: boolean;
   defaultPlaylist: string;
   name: string;
 }
@@ -14,6 +15,7 @@ export const VibeSchema: Schema = new Schema({
   genres: String,
   explicit: Boolean,
   pricing: String,
+  canUserAddTrack: Boolean,
   defaultPlaylist: String,
   name: String,
 });
