@@ -135,8 +135,12 @@ export async function search(hostId: string, query: string) {
     }
   };
 
+  const sortFunc = (track1: ITrack, track2: ITrack) => {
+    return track2.popularity - track1.popularity;
+  };
+
   // filter results based on user settings
-  result.tracks.items = result.tracks.items.filter(filterFunc);
+  result.tracks.items = result.tracks.items.filter(filterFunc).sort(sortFunc);
 
   return result;
 }

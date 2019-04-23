@@ -8,6 +8,7 @@ interface ITrack {
   id: string;
   explicit: boolean;
   artists: IArtist[];
+  popularity: number;
 }
 
 interface ISpotifyUser {
