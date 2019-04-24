@@ -19,7 +19,7 @@ class SpotifyPlayer {
       "GET",
       user,
     );
-    if (!result) {
+    if (!result || !result.tracks) {
       return [];
     }
     const tracks = result.tracks.items.map(this.toFormattedTrack);
@@ -30,7 +30,7 @@ class SpotifyPlayer {
     return {
       name: track.name,
       uri: track.uri,
-      id: track.id as string,
+      _id: track.id as string,
       explicit: track.explicit,
       artist: track.artists[0].name,
       popularity: track.popularity,

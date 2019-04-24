@@ -6,17 +6,6 @@ const log = createLogger({
   name: "Vibe",
 });
 
-export async function createVibe(req: Request, res: Response) {
-  const { hostId } = req.body;
-  try {
-    const vibe = await VibeController.createVibe(hostId);
-    res.status(200).send(vibe);
-  } catch (err) {
-    log.error({ err });
-    res.status(400).send(err);
-  }
-}
-
 export async function removeVibe(req: Request, res: Response) {
   const { id } = req.params;
   try {
