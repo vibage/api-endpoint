@@ -35,12 +35,13 @@ export async function setSpotifyData(
   spotifyId: string,
   accessToken: string,
   refreshToken: string,
+  currentVibe: string,
 ) {
   const user = await User.findByIdAndUpdate(userId, {
     spotifyId,
     accessToken,
     refreshToken,
-    currentVibe: "5cacf99fe841dc03f351150e", // this is the default vibe
+    currentVibe,
   });
   return user;
 }

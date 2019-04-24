@@ -5,12 +5,6 @@ const log = createLogger({
   name: "Vibe",
 });
 
-export async function createVibe(hostId: string) {
-  log.info(`Create: hostId=${hostId}`);
-  const vibe = await VibeModel.createVibe(hostId);
-  return vibe;
-}
-
 export async function removeVibe(vibeId: string) {
   log.info(`Remove: vibeId=${vibeId}`);
   const vibe = await VibeModel.removeVibe(vibeId);
@@ -50,4 +44,22 @@ export async function getPopular() {
   // different catagories of vibes you can choose from
   const vibes = await VibeModel.getAll();
   return vibes;
+}
+
+export function getVibeByName(name: string) {
+  return VibeModel.getVibeByName(name);
+}
+
+export async function createDefaultVibes() {
+  const vibe = await getVibeByName("Anything Goes");
+  if (vibe) {
+    log.info("Default Vibes have already been created");
+    return;
+  }
+
+  log.info("Creating default vibes");
+
+  await VibeModel.createVibe("Anything Goes", true, true);
+  await VibeModel.createVibe("Chill Coffee", false, true);
+  await VibeModel.createVibe("Playlist Only", true, false);
 }

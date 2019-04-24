@@ -5,7 +5,7 @@ interface IArtist {
 interface ITrack {
   name: string;
   uri: string;
-  id: string;
+  _id: string;
   explicit: boolean;
   artist: string;
   popularity: number;

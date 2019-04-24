@@ -1,13 +1,15 @@
 import { Vibe } from "../def/vibe";
 
-export async function createVibe(hostId: string) {
+export async function createVibe(
+  name: string,
+  explicit: boolean,
+  canUserAddTrack: boolean,
+) {
   const vibe = new Vibe({
-    hostId,
     genres: "all",
-    explicit: false,
-    pricing: 0,
-    defaultPlaylist: "",
-    name: "Default",
+    explicit,
+    name,
+    canUserAddTrack,
   });
   await vibe.save();
   return vibe;
@@ -19,6 +21,10 @@ export async function removeVibe(vibeId: string) {
 
 export function getVibe(vibeId: string) {
   return Vibe.findById(vibeId);
+}
+
+export function getVibeByName(name: string) {
+  return Vibe.findOne({ name });
 }
 
 export function setGenera(vibeId: string, genres: string) {

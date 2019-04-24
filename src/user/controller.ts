@@ -112,12 +112,21 @@ export async function addSpot(uid: string, code: string) {
     throw new Error("Spotify user already exists");
   }
 
+  const defaultVibe = await VibeController.getVibeByName("Anything Goes");
+
+  if (!defaultVibe) {
+    throw new Error("Vibe don't exist");
+  }
+
+  console.log(defaultVibe);
+
   // set spotify data
   const newUser = await UserModel.setSpotifyData(
     user.id,
     spotifyUser.id,
     tokens.access_token,
     tokens.refresh_token,
+    defaultVibe.id,
   );
 
   return newUser;
