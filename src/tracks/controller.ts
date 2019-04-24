@@ -1,6 +1,7 @@
 import { createLogger } from "bunyan";
 import { ITrackModel } from "../def/track";
 import { IUserModel, User } from "../def/user";
+import Player from "../players/spotify/player";
 import { io } from "../server";
 import * as TrackModel from "../tracks/model";
 import * as UserController from "../user/controller";
@@ -18,6 +19,8 @@ const log = createLogger({
 
 export async function addTrack(uid: string, hostId: string, trackId: string) {
   log.info(`Add: uid=${uid} hostId=${hostId}, trackId=${trackId}`);
+
+  // validate that everything is defined here.
 
   // get user data
   const host = await UserController.getUserById(hostId);
@@ -45,14 +48,11 @@ export async function addTrack(uid: string, hostId: string, trackId: string) {
   await UserController.removeUserTokens(user.id, 1);
 
   // get track data
-  const trackData: ITrack = await makeApiRequest(
-    `/v1/tracks/${trackId}`,
-    "GET",
-    host,
-  );
+
+  const trackData = await Player.getTrackData(trackId, host);
 
   // add track to database
-  const track = await TrackModel.addTrack(hostId, trackData, user.id);
+  await TrackModel.addTrack(hostId, trackData, user.id);
 
   // send tracks via socket
   await sendAllTracks(host.id);
@@ -115,11 +115,7 @@ export async function search(hostId: string, query: string) {
   // load users settings
   const host = await UserController.getUserById(hostId);
 
-  const result: { tracks: { items: ITrack[] } } = await makeApiRequest(
-    `/v1/search?q=${query}&type=track&market=US`,
-    "GET",
-    hostId,
-  );
+  const tracks = await Player.search(query, hostId);
 
   const vibe = await VibeController.getVibe(host.currentVibe);
 
@@ -140,7 +136,7 @@ export async function search(hostId: string, query: string) {
   };
 
   // filter results based on user settings
-  result.tracks.items = result.tracks.items.filter(filterFunc).sort(sortFunc);
+  const result = tracks.filter(filterFunc).sort(sortFunc);
 
   return result;
 }
@@ -215,7 +211,7 @@ export async function play(uid: string) {
 }
 
 export async function pause(uid: string) {
-  log.info(`Play: uid=${uid}`);
+  log.info(`Pause: uid=${uid}`);
 
   const host = await UserController.authUser(uid);
   const data = await makeApiRequest("/v1/me/player/pause", "PUT", host.id);

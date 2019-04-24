@@ -7,6 +7,7 @@ export function createUser(uid: string, name: string) {
   const userPayload: IUser = {
     uid,
     name,
+    dateCreated: new Date(),
     tokens: 100,
   };
   return new User(userPayload).save();

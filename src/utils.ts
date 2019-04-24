@@ -72,7 +72,7 @@ export async function makeApiRequest(
     data.error.status === 401
   ) {
     log.info("Refreshing Token");
-    await UserController.refreshAuthToken(user.id);
+    await UserController.refreshAuthToken(user.uid);
     await sendRequest(route, method, user.accessToken as string, payload);
   }
 
