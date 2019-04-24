@@ -14,10 +14,9 @@ export async function addTrack(
     hostId,
     addedBy,
     uri: trackData.uri,
-    artist: trackData.artists[0].name,
+    artist: trackData.artist,
     name: trackData.name,
     likes: 0,
-    trackData: JSON.stringify(trackData),
   });
   await track.save();
   return track;

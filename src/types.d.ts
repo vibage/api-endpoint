@@ -7,8 +7,9 @@ interface ITrack {
   uri: string;
   id: string;
   explicit: boolean;
-  artists: IArtist[];
+  artist: string;
   popularity: number;
+  imageUrl: string;
 }
 
 interface ISpotifyUser {

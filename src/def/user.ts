@@ -7,6 +7,7 @@ export interface IUser {
   name: string;
   queueOn?: boolean;
   uid: string;
+  dateCreated: Date;
   spotifyId?: string;
   accessToken?: string;
   refreshToken?: string;
@@ -22,6 +23,7 @@ export interface IUserModel extends Document, IUser {}
 export const UserSchema: Schema = new Schema({
   name: String,
   uid: String,
+  dateCreated: Date,
   queueOn: Boolean,
   accessToken: String,
   refreshToken: String,
