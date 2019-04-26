@@ -16,6 +16,7 @@ export async function addTrack(
     uri: trackData.uri,
     artist: trackData.artist,
     name: trackData.name,
+    imageUrl: trackData.imageUrl,
     likes: 0,
   });
   await track.save();
@@ -42,6 +43,11 @@ export async function likeTrack(
   return like;
 }
 
+export async function getLikes(trackId: string) {
+  const likes = TrackLike.find({ trackId });
+  return likes;
+}
+
 export async function unlikeTrack(queuerId: string, trackId: string) {
   await TrackLike.findOneAndDelete({
     trackId,
@@ -53,13 +59,21 @@ export async function unlikeTrack(queuerId: string, trackId: string) {
   });
 }
 
+// Make a delete flag instead of actually deleting
+
 export function removeTrack(trackId: string) {
   return Track.findByIdAndDelete(trackId);
 }
 
+export function clearQueue(hostId: string) {
+  return Track.deleteMany({
+    hostId,
+  });
+}
+
 export async function getTracks(hostId: string) {
   const tracks = await Track.find({ hostId })
-    .limit(15)
+    .limit(50)
     .sort({ likes: -1 });
   return tracks;
 }

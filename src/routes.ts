@@ -4,6 +4,7 @@ import * as UserController from "./user/routes";
 import * as VibeController from "./vibe/routes";
 
 // user commands
+app.get("/user/:id/info", UserController.getUserInfo);
 app.get("/user/:id", UserController.getUser);
 app.put("/user", UserController.createUser);
 app.post("/user/refresh", UserController.refreshAuthToken);
@@ -23,6 +24,7 @@ app.get("/queue/:id/search", TrackController.search);
 // host commands
 // since the host will be authing and has only one queue we don't need a queueId
 app.post("/queue/start", TrackController.startQueue);
+app.post("/queue/stop", TrackController.stopQueue);
 app.put("/queue/state", TrackController.setPlayerState);
 app.put("/queue/play", TrackController.play);
 app.put("/queue/pause", TrackController.pause);
