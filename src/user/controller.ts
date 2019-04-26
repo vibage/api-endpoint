@@ -170,3 +170,10 @@ export async function removeUserTokens(userId: string, num: number) {
   const user = await UserModel.addTokens(userId, -num);
   return user;
 }
+
+export async function setPlaylistId(uid: string, playlistId: string) {
+  log.info(`Set playlistid: uid=${uid} playlist=${playlistId}`);
+  const host = await authUser(uid);
+
+  return UserModel.setPlaylistId(host.id, playlistId);
+}

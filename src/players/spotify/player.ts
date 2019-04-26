@@ -4,6 +4,7 @@ import { makeApiRequest } from "../../utils";
 type UserData = IUserModel | string;
 
 class SpotifyPlayer {
+  public ITrack;
   public async getTrackData(trackId: string, user: UserData): Promise<ITrack> {
     const track: Spotify.Track = await makeApiRequest(
       `/v1/tracks/${trackId}`,
@@ -26,7 +27,46 @@ class SpotifyPlayer {
     return tracks;
   }
 
-  private toFormattedTrack(track: Spotify.Track): ITrack {
+  public play(
+    user: UserData,
+    deviceId: string,
+    trackUri?: string,
+    position?: number,
+  ) {
+    const payload: any = {
+      uris: [trackUri],
+    };
+    if (position) {
+      payload.position_ms = position;
+    }
+
+    if (!trackUri) {
+      return makeApiRequest(
+        `/v1/me/player/play?device_id=${deviceId}`,
+        "PUT",
+        user,
+      );
+    }
+    return makeApiRequest(
+      `/v1/me/player/play?device_id=${deviceId}`,
+      "PUT",
+      user,
+      payload,
+    );
+  }
+
+  public pause(user: UserData) {
+    return makeApiRequest("/v1/me/player/pause", "PUT", user);
+  }
+
+  public async getPlaylistTracks(user: UserData, playlistId: string) {
+    const res: {
+      tracks: { items: Array<{ track: Spotify.Track }> };
+    } = await makeApiRequest(`/v1/playlists/${playlistId}`, "GET", user);
+    return res.tracks.items.map((track) => this.toFormattedTrack(track.track));
+  }
+
+  private toFormattedTrack(track: Spotify.Track) {
     return {
       name: track.name,
       uri: track.uri,

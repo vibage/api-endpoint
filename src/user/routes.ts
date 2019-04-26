@@ -19,6 +19,17 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
   AsyncRouteWrapper(user, res, next);
 }
 
+export async function getUserInfo(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  // this should maybe be an auth token later instead of a param
+  const { id } = req.params;
+  const user = userController.getUserById(id);
+  AsyncRouteWrapper(user, res, next);
+}
+
 export async function refreshAuthToken(
   req: Request,
   res: Response,

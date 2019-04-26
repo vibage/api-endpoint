@@ -105,3 +105,13 @@ export async function playTrack(
   const result = trackController.playCertainTrack(uid, trackId);
   AsyncRouteWrapper(result, res, next);
 }
+
+export async function stopQueue(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const { uid } = req.body;
+  const result = trackController.stopPlayer(uid);
+  AsyncRouteWrapper(result, res, next);
+}

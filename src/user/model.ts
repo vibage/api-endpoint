@@ -53,7 +53,7 @@ export async function setQueueState(userId: string, isOn: boolean) {
   return user;
 }
 
-export async function setPlayerState(id: string, player: object) {
+export async function setPlayerState(id: string, player: object | null) {
   const user = await User.findByIdAndUpdate(id, {
     player,
   });
@@ -103,4 +103,10 @@ export async function setVibe(userId: string, vibeId: string) {
     currentVibe: vibeId,
   });
   return user;
+}
+
+export function setPlaylistId(userId: string, playlistId: string) {
+  return User.findByIdAndUpdate(userId, {
+    playlistId,
+  });
 }

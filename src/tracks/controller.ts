@@ -1,12 +1,10 @@
 import { createLogger } from "bunyan";
 import { ITrackModel } from "../def/track";
-import { IUserModel, User } from "../def/user";
 import Player from "../players/spotify/player";
 import { io } from "../server";
 import * as TrackModel from "../tracks/model";
 import * as UserController from "../user/controller";
 import * as UserModel from "../user/model";
-import { makeApiRequest } from "../utils";
 import * as VibeController from "../vibe/controller";
 
 const log = createLogger({
@@ -114,10 +112,9 @@ export async function search(hostId: string, query: string) {
 
   // load users settings
   const host = await UserController.getUserById(hostId);
+  const vibe = await VibeController.getVibe(host.currentVibe);
 
   const tracks = await Player.search(query, hostId);
-
-  const vibe = await VibeController.getVibe(host.currentVibe);
 
   const filterFunc = (track: ITrack) => {
     if (!vibe) {
@@ -164,23 +161,33 @@ export async function startQueue(uid: string, deviceId: string) {
   if (host.player) {
     log.info("Resuming user's play back");
 
-    const payload = {
-      uris: [host.player.track_window.current_track.uri],
-      position_ms: host.player.position,
-    };
+    const trackUri = host.player.track_window.current_track.uri;
+    const position = host.player.position;
 
-    // just send a play request and it should pick up where it left off
-    const res = await makeApiRequest(
-      `/v1/me/player/play?device_id=${deviceId}`,
-      "PUT",
-      host as IUserModel,
-      payload,
-    );
+    const res = await Player.play(host, deviceId, trackUri, position);
 
     return res;
   } else {
     // check host's setting to see if they want to play something else if
     // there is not something in the queue
+
+    // if they have a vibe that wants to add all the songs ot the queue
+    const vibe = await VibeController.getVibe(host.currentVibe);
+
+    if (vibe && vibe.playlistId) {
+      // these next two statements could be ran at the same time
+      await clearQueue(uid);
+      const playlistTracks = await Player.getPlaylistTracks(
+        host,
+        vibe.playlistId,
+      );
+
+      // add all the tracks from the playlist
+      for (const track of playlistTracks) {
+        await TrackModel.addTrack(host.id, track, host.id);
+      }
+    }
+
     nextTrack(uid);
   }
 }
@@ -197,15 +204,28 @@ export async function setPlayerState(uid: string, player: object) {
   };
 }
 
+export async function stopPlayer(uid: string) {
+  log.info("Stop Queue");
+  const host = await UserController.authUser(uid);
+
+  await UserModel.setPlayerState(host.id, null);
+  await UserModel.setQueueState(host.id, false);
+  io.to(host.id).emit("player", null);
+}
+
+export async function clearQueue(uid: string) {
+  log.info("Clear Queue");
+  const host = await UserController.authUser(uid);
+  await TrackModel.clearQueue(host.id);
+  sendAllTracks(host.id, []);
+}
+
 export async function play(uid: string) {
   log.info(`Play: uid=${uid}`);
 
   const host = await UserController.authUser(uid);
-  const data = await makeApiRequest(
-    `/v1/me/player/play?device_id=${host.deviceId}`,
-    "PUT",
-    host.id,
-  );
+
+  const data = await Player.play(host, host.deviceId as string);
 
   return data;
 }
@@ -214,7 +234,7 @@ export async function pause(uid: string) {
   log.info(`Pause: uid=${uid}`);
 
   const host = await UserController.authUser(uid);
-  const data = await makeApiRequest("/v1/me/player/pause", "PUT", host.id);
+  const data = await Player.pause(host);
 
   return data;
 }
@@ -246,14 +266,7 @@ export async function nextTrack(uid: string) {
   }
 
   // play the next track
-  await makeApiRequest(
-    `/v1/me/player/play?device_id=${host.deviceId}`,
-    "PUT",
-    host,
-    {
-      uris: [tracks[0].uri],
-    },
-  );
+  await Player.play(host, host.deviceId as string, tracks[0].uri);
 
   // remove the track
   await removeTrack(host.uid, tracks[0].id);
@@ -277,14 +290,7 @@ export async function playCertainTrack(uid: string, trackId: string) {
   }
 
   // play the next track
-  await makeApiRequest(
-    `/v1/me/player/play?device_id=${host.deviceId}`,
-    "PUT",
-    host,
-    {
-      uris: [track.uri],
-    },
-  );
+  await Player.play(host, host.deviceId as string, track.uri);
 
   // remove the track
   await removeTrack(host.uid, track.id);
