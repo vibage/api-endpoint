@@ -92,7 +92,6 @@ export async function addSpot(uid: string, code: string) {
     method: "POST",
   });
   const tokens: ISpotifyAuth = await response.json();
-  console.log(tokens);
   if (tokens.error) {
     throw new Error("Spotify Auth Expired");
   }
@@ -104,7 +103,6 @@ export async function addSpot(uid: string, code: string) {
     },
   });
   const spotifyUser: ISpotifyUser = await userDataRes.json();
-  console.log(spotifyUser);
 
   // search to see if host has already made an account
   const prevHost = await UserModel.getUserBySpotId(spotifyUser.id);
@@ -117,8 +115,6 @@ export async function addSpot(uid: string, code: string) {
   if (!defaultVibe) {
     throw new Error("Vibe don't exist");
   }
-
-  console.log(defaultVibe);
 
   // set spotify data
   const newUser = await UserModel.setSpotifyData(

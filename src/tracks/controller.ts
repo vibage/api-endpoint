@@ -46,7 +46,6 @@ export async function addTrack(uid: string, hostId: string, trackId: string) {
   await UserController.removeUserTokens(user.id, 1);
 
   // get track data
-
   const trackData = await Player.getTrackData(trackId, host);
 
   // add track to database
@@ -208,6 +207,7 @@ export async function stopPlayer(uid: string) {
   log.info("Stop Queue");
   const host = await UserController.authUser(uid);
 
+  await Player.pause(host);
   await UserModel.setPlayerState(host.id, null);
   await UserModel.setQueueState(host.id, false);
   io.to(host.id).emit("player", null);
@@ -258,8 +258,6 @@ export async function nextTrack(uid: string) {
   const host = await UserController.authUser(uid);
 
   const tracks = await getTracks(host.id);
-
-  console.log({ host, tracks });
 
   if (tracks.length === 0) {
     throw new Error("End of Queue");
