@@ -1,5 +1,5 @@
 import { createLogger } from "bunyan";
-import * as VibeModel from "./model";
+import * as VibeModel from "../models/vibe.model";
 
 const log = createLogger({
   name: "Vibe",

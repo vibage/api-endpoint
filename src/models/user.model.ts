@@ -1,7 +1,24 @@
-import { TrackLike } from "../def/trackLike";
-import { IUser, User } from "../def/user";
+import { Document, Model, model, Schema } from "mongoose";
+import { IHost, IUser } from "../types/user";
 
-// TODO: add JOI validation
+interface IUserModel extends Document, IHost {}
+
+const UserSchema: Schema = new Schema({
+  name: String,
+  uid: String,
+  dateCreated: Date,
+  queueOn: Boolean,
+  accessToken: String,
+  refreshToken: String,
+  spotifyId: String,
+  currentVibe: String,
+  player: Object,
+  playlistId: String,
+  deviceId: String,
+  tokens: Number,
+});
+
+const User: Model<IUserModel> = model<IUserModel>("user", UserSchema);
 
 export function createUser(uid: string, name: string) {
   const userPayload: IUser = {
@@ -82,13 +99,6 @@ export async function getActiveHosts() {
     "name id",
   );
   return users;
-}
-
-export async function getLikes(queuerId: string) {
-  const likes = await TrackLike.find({
-    queuerId,
-  });
-  return likes;
 }
 
 export async function addTokens(userId: string, tokens: number) {

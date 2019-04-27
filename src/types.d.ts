@@ -2,16 +2,6 @@ interface IArtist {
   name: string;
 }
 
-interface ITrack {
-  name: string;
-  uri: string;
-  _id: string;
-  explicit: boolean;
-  artist: string;
-  popularity: number;
-  imageUrl: string;
-}
-
 interface ISpotifyUser {
   display_name: string;
   id: string;

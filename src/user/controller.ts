@@ -1,8 +1,9 @@
 import { createLogger } from "bunyan";
 import fetch from "node-fetch";
+import * as TrackLikeModel from "../models/track-like.model";
+import * as UserModel from "../models/user.model";
 import { clientId, clientSecret } from "../utils";
 import * as VibeController from "../vibe/controller";
-import * as UserModel from "./model";
 
 const log = createLogger({
   name: "User",
@@ -131,7 +132,7 @@ export async function addSpot(uid: string, code: string) {
 export async function getLikes(userId: string) {
   log.info(`Get Like, userId=${userId}`);
 
-  const likes = await UserModel.getLikes(userId);
+  const likes = await TrackLikeModel.getLikes(userId);
   return likes;
 }
 
