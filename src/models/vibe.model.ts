@@ -1,4 +1,18 @@
-import { Vibe } from "../def/vibe";
+import { Document, Model, model, Schema } from "mongoose";
+import { IVibe } from "../types/vibe";
+
+type IVibeModel = IVibe & Document;
+
+const VibeSchema: Schema = new Schema({
+  hostId: String,
+  genres: String,
+  explicit: Boolean,
+  canUserAddTrack: Boolean,
+  playlistId: String,
+  name: String,
+});
+
+const Vibe: Model<IVibeModel> = model<IVibeModel>("vibe", VibeSchema);
 
 export async function createVibe(
   name: string,

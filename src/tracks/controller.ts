@@ -1,10 +1,10 @@
 import { createLogger } from "bunyan";
-import { ITrackModel } from "../def/track";
+import * as TrackLikeModel from "../models/track-like.model";
+import * as TrackModel from "../models/track.model";
+import * as UserModel from "../models/user.model";
 import Player from "../players/spotify/player";
 import { io } from "../server";
-import * as TrackModel from "../tracks/model";
 import * as UserController from "../user/controller";
-import * as UserModel from "../user/model";
 import * as VibeController from "../vibe/controller";
 
 const log = createLogger({
@@ -65,7 +65,8 @@ export async function likeTrack(uid: string, hostId: string, trackId: string) {
 
   const queuer = await UserController.authUser(uid);
 
-  await TrackModel.likeTrack(hostId, queuer.id, trackId);
+  await TrackLikeModel.likeTrack(hostId, queuer.id, trackId);
+  await TrackModel.incrementTrackLike(trackId, 1);
   sendAllTracks(hostId);
   return {
     status: "done",
@@ -82,7 +83,8 @@ export async function unlikeTrack(
   // authenticate
   const queuer = await UserController.authUser(uid);
 
-  await TrackModel.unlikeTrack(queuer.id, trackId);
+  await TrackLikeModel.unlikeTrack(queuer.id, trackId);
+  await TrackModel.incrementTrackLike(trackId, -1);
   sendAllTracks(hostId);
   return {
     status: "done",
@@ -301,13 +303,13 @@ export async function playCertainTrack(uid: string, trackId: string) {
   };
 }
 
-async function sendAllTracks(hostId: string, tracks?: ITrackModel[]) {
+async function sendAllTracks(hostId: string, tracks?: ITrack[]) {
   log.info("Sending all tracks");
-  const allTracks: ITrackModel[] = await new Promise(async (resolve, rej) => {
+  const allTracks: ITrack[] = await new Promise(async (resolve) => {
     if (tracks) {
       resolve(tracks);
     } else {
-      const loadedTracks = await getTracks(hostId);
+      const loadedTracks: ITrack[] = await getTracks(hostId);
       resolve(loadedTracks);
     }
   });
