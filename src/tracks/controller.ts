@@ -53,7 +53,7 @@ export async function addTrack(uid: string, hostId: string, trackId: string) {
   await TrackModel.addTrack(hostId, trackData, user.id);
 
   // automatically like song
-  await likeTrack(uid, hostId, trackId)
+  await likeTrack(uid, hostId, trackId);
 
   // send tracks via socket
   await sendAllTracks(host.id);
