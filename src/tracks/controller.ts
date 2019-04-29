@@ -39,6 +39,15 @@ export async function addTrack(uid: string, hostId: string, trackId: string) {
       message: "Host has disabled adding songs",
     };
   }
+ 
+  // if song is already in queue, throw error
+  if(TrackModel.getTracks(hostId).contains("")){
+    return {
+      error: true,
+      code: 400,
+      message: "Song is already in queue",
+    };
+  }
 
   // get amount of tokens to remove for the vibe
   // check if the user had added a track recently based on the companies rules
