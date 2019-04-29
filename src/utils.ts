@@ -1,7 +1,7 @@
 import { createLogger } from "bunyan";
 import { NextFunction, Response } from "express";
 import fetch from "node-fetch";
-import { IUserModel } from "./def/user";
+import { IHost, IUser } from "./types/user";
 import * as UserController from "./user/controller";
 
 const log = createLogger({ name: "Utils" });
@@ -43,25 +43,15 @@ async function sendRequest(
 export async function makeApiRequest(
   route: string,
   method: string,
-  userThing: string | IUserModel,
+  user: IUser,
   payload?: object,
 ) {
   log.info(`API Request: route=${route}, method=${method}`);
 
-  // get user
-  const user =
-    typeof userThing === "string"
-      ? await UserController.getUserById(userThing)
-      : userThing;
-
-  if (!user) {
-    throw new Error("User does not exist");
-  }
-
   const data = await sendRequest(
     route,
     method,
-    user.accessToken as string,
+    (user as IHost).accessToken,
     payload,
   );
 
@@ -73,7 +63,7 @@ export async function makeApiRequest(
   ) {
     log.info("Refreshing Token");
     await UserController.refreshAuthToken(user.uid);
-    await sendRequest(route, method, user.accessToken as string, payload);
+    await sendRequest(route, method, (user as IHost).accessToken, payload);
   }
 
   return data;

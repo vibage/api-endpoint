@@ -4,6 +4,7 @@ import * as TrackModel from "../models/track.model";
 import * as UserModel from "../models/user.model";
 import Player from "../players/spotify/player";
 import { io } from "../server";
+import { ITrack } from "../types/track";
 import * as UserController from "../user/controller";
 import * as VibeController from "../vibe/controller";
 
@@ -115,7 +116,7 @@ export async function search(hostId: string, query: string) {
   const host = await UserController.getUserById(hostId);
   const vibe = await VibeController.getVibe(host.currentVibe);
 
-  const tracks = await Player.search(query, hostId);
+  const tracks = await Player.search(query, host);
 
   const filterFunc = (track: ITrack) => {
     if (!vibe) {
@@ -168,25 +169,25 @@ export async function startQueue(uid: string, deviceId: string) {
     const res = await Player.play(host, deviceId, trackUri, position);
 
     return res;
-  } else {
-    // check host's setting to see if they want to play something else if
-    // there is not something in the queue
+  }
 
-    // if they have a vibe that wants to add all the songs ot the queue
-    const vibe = await VibeController.getVibe(host.currentVibe);
+  // check host's setting to see if they want to play something else if
+  // there is not something in the queue
 
-    if (vibe && vibe.playlistId) {
-      // these next two statements could be ran at the same time
-      await clearQueue(uid);
-      const playlistTracks = await Player.getPlaylistTracks(
-        host,
-        vibe.playlistId,
-      );
+  // if they have a vibe that wants to add all the songs ot the queue
+  const vibe = await VibeController.getVibe(host.currentVibe);
 
-      // add all the tracks from the playlist
-      for (const track of playlistTracks) {
-        await TrackModel.addTrack(host.id, track, host.id);
-      }
+  if (vibe && vibe.playlistId) {
+    // these next two statements could be ran at the same time
+    await clearQueue(uid);
+    const playlistTracks = await Player.getPlaylistTracks(
+      host,
+      vibe.playlistId,
+    );
+
+    // add all the tracks from the playlist
+    for (const track of playlistTracks) {
+      await TrackModel.addTrack(host.id, track, host.id);
     }
 
     nextTrack(uid);
@@ -250,7 +251,7 @@ export async function removeTrack(uid: string, trackId: string) {
   // remove from database
   const track = await TrackModel.removeTrack(trackId);
 
-  await sendAllTracks(host.id);
+  sendAllTracks(host.id);
   return track;
 }
 
@@ -272,7 +273,7 @@ export async function nextTrack(uid: string) {
   await removeTrack(host.uid, tracks[0].id);
 
   // send tracks to user
-  await sendAllTracks(host.id);
+  sendAllTracks(host.id);
 
   // send the next track to the user
   return tracks[1];
@@ -296,7 +297,7 @@ export async function playCertainTrack(uid: string, trackId: string) {
   await removeTrack(host.uid, track.id);
 
   // send tracks to user
-  await sendAllTracks(host.id);
+  sendAllTracks(host.id);
 
   return {
     status: "done",
@@ -305,14 +306,11 @@ export async function playCertainTrack(uid: string, trackId: string) {
 
 async function sendAllTracks(hostId: string, tracks?: ITrack[]) {
   log.info("Sending all tracks");
-  const allTracks: ITrack[] = await new Promise(async (resolve) => {
-    if (tracks) {
-      resolve(tracks);
-    } else {
-      const loadedTracks: ITrack[] = await getTracks(hostId);
-      resolve(loadedTracks);
-    }
-  });
-
-  io.to(hostId).emit("tracks", allTracks);
+  if (tracks) {
+    io.to(hostId).emit("tracks", tracks);
+  } else {
+    getTracks(hostId).then((loadedTracks) => {
+      io.to(hostId).emit("tracks", loadedTracks);
+    });
+  }
 }

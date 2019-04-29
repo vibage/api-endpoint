@@ -2,6 +2,7 @@ import { createLogger } from "bunyan";
 import fetch from "node-fetch";
 import * as TrackLikeModel from "../models/track-like.model";
 import * as UserModel from "../models/user.model";
+import Player from "../players/spotify/player";
 import { clientId, clientSecret } from "../utils";
 import * as VibeController from "../vibe/controller";
 
@@ -19,19 +20,9 @@ export async function refreshAuthToken(uid: string) {
 
   const user = await authUser(uid);
 
-  const response = await fetch("https://accounts.spotify.com/api/token", {
-    body: `grant_type=refresh_token&refresh_token=${
-      user.refreshToken
-    }&client_id=${clientId}&client_secret=${clientSecret}`,
-    headers: {
-      "Cache-Control": "no-cache",
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    method: "POST",
-  });
-  const data: ISpotifyAuth = await response.json();
+  const tokenData = await Player.refreshToken(user);
 
-  const updatedUser = await UserModel.setToken(user.id, data.access_token);
+  const updatedUser = await UserModel.setToken(user.id, tokenData.access_token);
 
   return updatedUser;
 }
@@ -81,29 +72,9 @@ export async function addSpot(uid: string, code: string) {
   // make sure the user exists
   const user = await authUser(uid);
 
-  const redirectUri = encodeURIComponent("https://fizzle.tgt101.com");
-  const response = await fetch("https://accounts.spotify.com/api/token", {
-    body:
-      `grant_type=authorization_code&code=${code}&redirect_uri=${redirectUri}` +
-      `&client_id=${clientId}&client_secret=${clientSecret}`,
-    headers: {
-      "Cache-Control": "no-cache",
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    method: "POST",
-  });
-  const tokens: ISpotifyAuth = await response.json();
-  if (tokens.error) {
-    throw new Error("Spotify Auth Expired");
-  }
+  const tokens = await Player.authorize(code);
 
-  // get the user's spotify id
-  const userDataRes = await fetch("https://api.spotify.com/v1/me", {
-    headers: {
-      Authorization: `Bearer ${tokens.access_token}`,
-    },
-  });
-  const spotifyUser: ISpotifyUser = await userDataRes.json();
+  const spotifyUser = await Player.getProfile(tokens.access_token);
 
   // search to see if host has already made an account
   const prevHost = await UserModel.getUserBySpotId(spotifyUser.id);
