@@ -40,8 +40,13 @@ export async function addTrack(uid: string, hostId: string, trackId: string) {
     };
   }
  
+  // get track data
+  const trackData = await Player.getTrackData(trackId, host);
+
+
   // if song is already in queue, throw error
-  if(TrackModel.getTracks(hostId).contains("")){
+  const inQueue = await TrackModel.getQueuedTrackByUri(hostId, trackData.uri);
+  if(inQueue.length){
     return {
       error: true,
       code: 400,
@@ -54,9 +59,7 @@ export async function addTrack(uid: string, hostId: string, trackId: string) {
 
   // remove tokens from user
   await UserController.removeUserTokens(user.id, 1);
-
-  // get track data
-  const trackData = await Player.getTrackData(trackId, host);
+  
 
   // add track to database
   await TrackModel.addTrack(hostId, trackData, user.id);
