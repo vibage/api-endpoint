@@ -33,3 +33,22 @@ mongoose.connect(uri, { useNewUrlParser: true }).then(
 //   projectId: "vibage",
 //   keyFilename: "/path/to/keyfile.json",
 // });
+
+// import * as admin from "firebase-admin";
+// import serviceAccount from "./keys/vibage-ad58445fd61c.json";
+
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount as any),
+// });
+
+// export const db = admin.firestore();
+
+// db.collection("users");
+
+// const docRef = db.collection("users").doc("alovelace");
+
+// const setAda = docRef.set({
+//   first: "Ada",
+//   last: "Lovelace",
+//   born: 1815,
+// });
