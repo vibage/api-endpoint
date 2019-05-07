@@ -2,6 +2,7 @@ language: node_js
 node_js:
   - "10"
 before_install:
+  - mkdir keys
   - openssl aes-256-cbc -K $encrypted_fdbc054559ab_key -iv $encrypted_fdbc054559ab_iv
     -in ./gcloud/vibage-stage-cred.json.enc -out ./keys/vibage-stage-cred.json -d
 install:
