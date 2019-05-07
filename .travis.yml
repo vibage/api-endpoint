@@ -13,5 +13,5 @@ deploy:
   provider: gae
   keyfile: "./keys/vibage-stage-cred.json"
   project: vibage-stage
-  config: "./gcloud/stage.app.yml"
+  config: "stage.app.yml"
   on: stage
