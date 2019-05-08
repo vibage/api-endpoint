@@ -5,13 +5,21 @@ before_install:
   - mkdir keys
   - openssl aes-256-cbc -K $encrypted_fdbc054559ab_key -iv $encrypted_fdbc054559ab_iv
     -in ./gcloud/vibage-stage-cred.json.enc -out ./keys/vibage-stage-cred.json -d
+  - openssl aes-256-cbc -K $encrypted_fdbc054559ab_key -iv $encrypted_fdbc054559ab_iv
+    -in ./gcloud/vibage-cred.json.enc -out ./keys/vibage-cred.json -d
 install:
   - yarn install
 script:
   - yarn build
 deploy:
   provider: gae
-  keyfile: "./keys/vibage-stage-cred.json"
-  project: vibage-stage
-  config: "stage.app.yml"
-  on: stage
+  on:
+    branch: stage
+    keyfile: "./keys/vibage-stage-cred.json"
+    project: vibage-stage
+    config: "stage.app.yml"
+  on:
+    branch: master
+    keyfile: "./keys/vibage-cred.json"
+    project: vibage
+    config: "prod.app.yml"
