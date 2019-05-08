@@ -1,3 +1,4 @@
+import { Response } from "express";
 import { app } from "./app";
 import * as TrackController from "./tracks/routes";
 import * as UserController from "./user/routes";
@@ -41,3 +42,6 @@ app.post("/vibe/:id/setExplicit", VibeController.setExplicit);
 
 // other commands
 app.get("/nearbyHost", UserController.getActiveHosts);
+
+// smoke test
+app.get("/ping", (_, res: Response) => res.send("pong"));
