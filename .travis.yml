@@ -12,14 +12,15 @@ install:
 script:
   - yarn build
 deploy:
-  provider: gae
-  on:
-    branch: stage
+  - provider: gae
     keyfile: "./keys/vibage-stage-cred.json"
     project: vibage-stage
-    config: "stage.app.yml"
-  on:
-    branch: master
+    config: stage.app.yml
+    on:
+      branch: stage
+  - provider: gae
     keyfile: "./keys/vibage-cred.json"
     project: vibage
-    config: "prod.app.yml"
+    config: prod.app.yml
+    on:
+      branch: master
