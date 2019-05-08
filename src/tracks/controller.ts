@@ -39,15 +39,27 @@ export async function addTrack(uid: string, hostId: string, trackId: string) {
       message: "Host has disabled adding songs",
     };
   }
+ 
+  // get track data
+  const trackData = await Player.getTrackData(trackId, host);
+
+
+  // if song is already in queue, throw error
+  const inQueue = await TrackModel.getQueuedTrackByUri(hostId, trackData.uri);
+  if(inQueue.length){
+    return {
+      error: true,
+      code: 400,
+      message: "Song is already in queue",
+    };
+  }
 
   // get amount of tokens to remove for the vibe
   // check if the user had added a track recently based on the companies rules
 
   // remove tokens from user
   await UserController.removeUserTokens(user.id, 1);
-
-  // get track data
-  const trackData = await Player.getTrackData(trackId, host);
+  
 
   // add track to database
   await TrackModel.addTrack(hostId, trackData, user.id);

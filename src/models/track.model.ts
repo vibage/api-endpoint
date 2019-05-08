@@ -60,3 +60,8 @@ export async function getTracks(hostId: string) {
     .sort({ likes: -1 });
   return tracks;
 }
+
+export async function getQueuedTrackByUri(hostId: string, uri: string) {
+  const tracks = await Track.find({ hostId, uri });
+  return tracks;
+}
