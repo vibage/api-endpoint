@@ -25,6 +25,7 @@ app.get("/queue/:id/search", TrackController.search);
 // host commands
 // since the host will be authing and has only one queue we don't need a queueId
 app.post("/queue/start", TrackController.startQueue);
+app.post("/queue/resume", TrackController.resumeQueue);
 app.post("/queue/stop", TrackController.stopQueue);
 app.put("/queue/state", TrackController.setPlayerState);
 app.put("/queue/play", TrackController.play);

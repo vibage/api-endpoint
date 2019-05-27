@@ -1,9 +1,8 @@
 import { createLogger } from "bunyan";
-import fetch from "node-fetch";
 import * as TrackLikeModel from "../models/track-like.model";
 import * as UserModel from "../models/user.model";
 import Player from "../players/spotify/player";
-import { clientId, clientSecret } from "../utils";
+import { IHost } from "../types/user";
 import * as VibeController from "../vibe/controller";
 
 const log = createLogger({
@@ -22,7 +21,10 @@ export async function refreshAuthToken(uid: string) {
 
   const tokenData = await Player.refreshToken(user);
 
-  const updatedUser = await UserModel.setToken(user.id, tokenData.access_token);
+  const updatedUser = await UserModel.setToken(
+    user._id,
+    tokenData.access_token,
+  );
 
   return updatedUser;
 }
@@ -61,7 +63,7 @@ export async function getActiveHosts() {
 
 export async function getVibe(userId: string) {
   log.info(`Get Vibe: userId=${userId}`);
-  const host = await getUserById(userId);
+  const host = (await getUserById(userId)) as IHost;
   const vibe = await VibeController.getVibe(host.currentVibe);
   return vibe;
 }
@@ -90,7 +92,7 @@ export async function addSpot(uid: string, code: string) {
 
   // set spotify data
   const newUser = await UserModel.setSpotifyData(
-    user.id,
+    user._id,
     spotifyUser.id,
     tokens.access_token,
     tokens.refresh_token,
@@ -117,8 +119,10 @@ export async function setVibe(uid: string, vibeId: string) {
 
   const user = await authUser(uid);
 
-  const res = await UserModel.setVibe(user.id, vibeId);
-  return res;
+  await UserModel.setVibe(user._id, vibeId);
+  return {
+    status: "done",
+  };
 }
 
 export function setDeviceId(id: string, deviceId: string) {
@@ -135,13 +139,12 @@ export async function removeUserTokens(userId: string, num: number) {
     throw new Error("Not enough tokens");
   }
 
-  const user = await UserModel.addTokens(userId, -num);
-  return user;
+  await UserModel.addTokens(userId, -num);
 }
 
 export async function setPlaylistId(uid: string, playlistId: string) {
   log.info(`Set playlistid: uid=${uid} playlist=${playlistId}`);
   const host = await authUser(uid);
 
-  return UserModel.setPlaylistId(host.id, playlistId);
+  return UserModel.setPlaylistId(host._id, playlistId);
 }
