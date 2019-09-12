@@ -105,7 +105,7 @@ export async function addSpot(uid: string, code: string) {
 export async function getLikes(userId: string) {
   log.info(`Get Like, userId=${userId}`);
 
-  const likes = await TrackLikeModel.getLikes(userId);
+  const likes = await TrackLikeModel.getLikesForUser(userId);
   return likes;
 }
 

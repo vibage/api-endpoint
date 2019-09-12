@@ -69,23 +69,31 @@ export async function addTrack(user: IUser, hostId: string, trackId: string) {
   }
 
   // automatically like song
-  await likeTrack(user, hostId, track.id);
+  await likeTrack(user, hostId, track.id, false);
 
   // send tracks via socket
-  await sendAllTracks(host._id);
+  await sendAllTracks(hostId);
 
   return {
     action: "DTK",
     amount: 1,
+    track,
   };
 }
 
-export async function likeTrack(user: IUser, hostId: string, trackId: string) {
+export async function likeTrack(
+  user: IUser,
+  hostId: string,
+  trackId: string,
+  shouldSend = true,
+) {
   log.info(`Like: user=${user.name} hostId=${hostId}, trackId=${trackId}`);
 
   await TrackLikeModel.likeTrack(hostId, user._id, trackId);
   await TrackModel.incrementTrackLike(trackId, 1);
-  await sendAllTracks(hostId);
+  if (shouldSend) {
+    await sendAllTracks(hostId);
+  }
   return {
     status: "done",
   };
