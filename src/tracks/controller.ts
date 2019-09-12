@@ -5,6 +5,7 @@ import * as UserModel from "../models/user.model";
 import Player from "../players/spotify/player";
 import { io } from "../server";
 import { ITrack } from "../types/track";
+import { IHost, IUser } from "../types/user";
 import * as UserController from "../user/controller";
 import * as VibeController from "../vibe/controller";
 
@@ -16,16 +17,13 @@ const log = createLogger({
      Queuer Functions
 ==========================================*/
 
-export async function addTrack(uid: string, hostId: string, trackId: string) {
-  log.info(`Add: uid=${uid} hostId=${hostId}, trackId=${trackId}`);
+export async function addTrack(user: IUser, hostId: string, trackId: string) {
+  log.info(`Add: user=${user.name} hostId=${hostId}, trackId=${trackId}`);
 
   // validate that everything is defined here.
 
   // get user data
-  const host = await UserController.getUserById(hostId);
-
-  // auth the user
-  const user = await UserController.authUser(uid);
+  const host = (await UserController.getUserById(hostId)) as IHost;
 
   // get host vibe
   const vibe = await VibeController.getVibe(host.currentVibe);
@@ -40,54 +38,75 @@ export async function addTrack(uid: string, hostId: string, trackId: string) {
     };
   }
 
+  // get track data
+  const trackData = await Player.getTrackData(trackId, host);
+
+  // if song is already in queue, throw error
+  const inQueue = await TrackModel.getQueuedTrackByUri(hostId, trackData.uri);
+  if (inQueue.length) {
+    return {
+      error: true,
+      code: 400,
+      message: "Song is already in queue",
+    };
+  }
+
   // get amount of tokens to remove for the vibe
   // check if the user had added a track recently based on the companies rules
 
   // remove tokens from user
-  await UserController.removeUserTokens(user.id, 1);
-
-  // get track data
-  const trackData = await Player.getTrackData(trackId, host);
+  await UserController.removeUserTokens(user._id, 1);
 
   // add track to database
-  await TrackModel.addTrack(hostId, trackData, user.id);
+  const track = await TrackModel.addTrack(hostId, trackData, user._id);
+
+  // check if queue is empty and the default playlist not playing
+  // if this is true then go ahead and play the added song
+  const tracks = await TrackModel.getTracks(hostId);
+  if (tracks.length === 1 && host.player === null) {
+    console.log("Added track");
+    nextTrack(host);
+  }
 
   // automatically like song
-  await likeTrack(uid, hostId, trackId);
+  await likeTrack(user, hostId, track.id, false);
 
   // send tracks via socket
-  await sendAllTracks(host.id);
+  await sendAllTracks(hostId);
 
   return {
     action: "DTK",
     amount: 1,
+    track,
   };
 }
 
-export async function likeTrack(uid: string, hostId: string, trackId: string) {
-  log.info(`Like: uid=${uid} hostId=${hostId}, trackId=${trackId}`);
+export async function likeTrack(
+  user: IUser,
+  hostId: string,
+  trackId: string,
+  shouldSend = true,
+) {
+  log.info(`Like: user=${user.name} hostId=${hostId}, trackId=${trackId}`);
 
-  const queuer = await UserController.authUser(uid);
-
-  await TrackLikeModel.likeTrack(hostId, queuer.id, trackId);
+  await TrackLikeModel.likeTrack(hostId, user._id, trackId);
   await TrackModel.incrementTrackLike(trackId, 1);
-  sendAllTracks(hostId);
+  if (shouldSend) {
+    await sendAllTracks(hostId);
+  }
   return {
     status: "done",
   };
 }
 
 export async function unlikeTrack(
-  uid: string,
+  user: IUser,
   hostId: string,
   trackId: string,
 ) {
-  log.info(`Unlike: uid=${uid} hostId=${hostId} trackId=${trackId}`);
+  log.info(`Unlike: user=${user.name} hostId=${hostId} trackId=${trackId}`);
 
-  // authenticate
-  const queuer = await UserController.authUser(uid);
-
-  await TrackLikeModel.unlikeTrack(queuer.id, trackId);
+  await TrackLikeModel.unlikeTrack(user._id, trackId);
   await TrackModel.incrementTrackLike(trackId, -1);
   sendAllTracks(hostId);
   return {
@@ -103,7 +122,7 @@ export function getTracks(hostId: string) {
 export async function getPlayer(hostId: string) {
   log.info(`Get Player: hostId=${hostId}`);
 
-  const host = await UserController.getUserById(hostId);
+  const host = (await UserController.getUserById(hostId)) as IHost;
 
   if (!host.player) {
     return null;
@@ -116,7 +135,8 @@ export async function search(hostId: string, query: string) {
   log.info(`Search: hostId=${hostId}, query=${query}`);
 
   // load users settings
-  const host = await UserController.getUserById(hostId);
+  const host = (await UserController.getUserById(hostId)) as IHost;
+
   const vibe = await VibeController.getVibe(host.currentVibe);
 
   const tracks = await Player.search(query, host);
@@ -147,42 +167,18 @@ export async function search(hostId: string, query: string) {
      Host Functions
 ==========================================*/
 
-export async function startQueue(uid: string, deviceId: string) {
-  log.info(`Start: uid=${uid}, deviceId=${deviceId}`);
+export async function startQueue(host: IHost, deviceId: string) {
+  log.info(`Start: host=${host.name}, deviceId=${deviceId}`);
 
-  const host = await UserController.authUser(uid);
-
-  await UserController.setDeviceId(host.id, deviceId);
-
-  // user is a host
-  if (!host.spotifyId) {
-    throw new Error("User is not a host");
-  }
-
-  await UserModel.setQueueState(host.id, true);
-
-  // check the host's player context to see if they were playing a song before
-  // and if they were restore it to the correct place
-  if (host.player) {
-    log.info("Resuming user's play back");
-
-    const trackUri = host.player.track_window.current_track.uri;
-    const position = host.player.position;
-
-    const res = await Player.play(host, deviceId, trackUri, position);
-
-    return res;
-  }
-
-  // check host's setting to see if they want to play something else if
-  // there is not something in the queue
+  await UserController.setDeviceId(host._id, deviceId);
+  await UserModel.setQueueState(host._id, true);
 
   // if they have a vibe that wants to add all the songs ot the queue
   const vibe = await VibeController.getVibe(host.currentVibe);
 
   if (vibe && vibe.playlistId) {
     // these next two statements could be ran at the same time
-    await clearQueue(uid);
+    await clearQueue(host);
     const playlistTracks = await Player.getPlaylistTracks(
       host,
       vibe.playlistId,
@@ -190,46 +186,63 @@ export async function startQueue(uid: string, deviceId: string) {
 
     // add all the tracks from the playlist
     for (const track of playlistTracks) {
-      await TrackModel.addTrack(host.id, track, host.id);
+      await TrackModel.addTrack(host._id, track, host._id);
     }
 
-    nextTrack(uid);
+    nextTrack(host);
   }
-}
-
-export async function setPlayerState(uid: string, player: object) {
-  const host = await UserController.authUser(uid);
-
-  io.to(host.id).emit("player", player);
-
-  await UserModel.setPlayerState(host.id, player);
 
   return {
     status: "done",
   };
 }
 
-export async function stopPlayer(uid: string) {
-  log.info("Stop Queue");
-  const host = await UserController.authUser(uid);
+export async function resumeQueue(host: IHost) {
+  log.info("Resuming user's play back");
 
-  await Player.pause(host);
-  await UserModel.setPlayerState(host.id, null);
-  await UserModel.setQueueState(host.id, false);
-  io.to(host.id).emit("player", null);
+  if (!host.player) {
+    throw new Error("Queue has no player");
+  }
+
+  const trackUri = host.player.track_window.current_track.uri;
+  const position = host.player.position;
+
+  const res = await Player.play(host, host.deviceId, trackUri, position);
+
+  return res;
 }
 
-export async function clearQueue(uid: string) {
+// async function addPlaylistToQueue(host: IHost, playlistId: string) {}
+
+export async function setPlayerState(host: IHost, player: object | null) {
+  io.to(host._id).emit("player", player);
+
+  await UserModel.setPlayerState(host._id, player);
+
+  return {
+    status: "done",
+  };
+}
+
+export async function stopPlayer(host: IHost) {
+  log.info("Stop Queue");
+
+  await Player.pause(host);
+  await setPlayerState(host, null);
+  await UserModel.setQueueState(host._id, false);
+  await clearQueue(host);
+}
+
+export async function clearQueue(host: IHost) {
   log.info("Clear Queue");
-  const host = await UserController.authUser(uid);
-  await TrackModel.clearQueue(host.id);
-  sendAllTracks(host.id, []);
+  await TrackModel.clearQueue(host._id);
+  sendAllTracks(host._id, []);
 }
 
 export async function play(uid: string) {
   log.info(`Play: uid=${uid}`);
 
-  const host = await UserController.authUser(uid);
+  const host = (await UserController.authUser(uid)) as IHost;
 
   const data = await Player.play(host, host.deviceId as string);
 
@@ -254,16 +267,14 @@ export async function removeTrack(uid: string, trackId: string) {
   // remove from database
   const track = await TrackModel.removeTrack(trackId);
 
-  sendAllTracks(host.id);
+  sendAllTracks(host._id);
   return track;
 }
 
-export async function nextTrack(uid: string) {
-  log.info(`Next Track: uid=${uid}`);
+export async function nextTrack(host: IHost) {
+  log.info(`Next Track: host=${host.name}`);
 
-  const host = await UserController.authUser(uid);
-
-  const tracks = await getTracks(host.id);
+  const tracks = await getTracks(host._id);
 
   if (tracks.length === 0) {
     throw new Error("End of Queue");
@@ -276,7 +287,7 @@ export async function nextTrack(uid: string) {
   await removeTrack(host.uid, tracks[0].id);
 
   // send tracks to user
-  sendAllTracks(host.id);
+  sendAllTracks(host._id);
 
   // send the next track to the user
   return tracks[1];
@@ -285,7 +296,7 @@ export async function nextTrack(uid: string) {
 export async function playCertainTrack(uid: string, trackId: string) {
   log.info(`Play Track: uid=${uid} trackId=${trackId}`);
 
-  const host = await UserController.authUser(uid);
+  const host = (await UserController.authUser(uid)) as IHost;
 
   const track = await TrackModel.getTrack(trackId);
 
@@ -300,7 +311,7 @@ export async function playCertainTrack(uid: string, trackId: string) {
   await removeTrack(host.uid, track.id);
 
   // send tracks to user
-  sendAllTracks(host.id);
+  sendAllTracks(host._id);
 
   return {
     status: "done",

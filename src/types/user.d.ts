@@ -1,5 +1,6 @@
 export interface IUser {
   name: string;
+  _id: string | any;
   uid: string;
   dateCreated: Date;
   tokens: number;

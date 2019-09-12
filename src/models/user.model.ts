@@ -1,7 +1,7 @@
 import { Document, Model, model, Schema } from "mongoose";
 import { IHost, IUser } from "../types/user";
 
-interface IUserModel extends Document, IHost {}
+interface IUserModel extends Document, IUser {}
 
 const UserSchema: Schema = new Schema({
   name: String,
@@ -21,26 +21,30 @@ const UserSchema: Schema = new Schema({
 const User: Model<IUserModel> = model<IUserModel>("user", UserSchema);
 
 export function createUser(uid: string, name: string) {
-  const userPayload: IUser = {
+  const userPayload = {
     uid,
     name,
     dateCreated: new Date(),
     tokens: 100,
   };
-  return new User(userPayload).save();
+  return new User(userPayload).save() as Promise<IUser>;
 }
 
-export function getUser(userId: string) {
-  return User.findById(userId);
+export async function getUser(userId: string): Promise<IUser | null> {
+  const user = await User.findById(userId);
+  return user;
 }
 
-export function getUserByUid(uid: string) {
-  return User.findOne({
+export async function getUserByUid(uid: string): Promise<IUser | null> {
+  const user = await User.findOne({
     uid,
   });
+  return user;
 }
 
-export async function getUserBySpotId(spotifyId: string) {
+export async function getUserBySpotId(
+  spotifyId: string,
+): Promise<IUser | null> {
   const user = await User.findOne({
     spotifyId,
   });
@@ -53,31 +57,33 @@ export async function setSpotifyData(
   accessToken: string,
   refreshToken: string,
   currentVibe: string,
-) {
+): Promise<IUser | null> {
   const user = await User.findByIdAndUpdate(userId, {
     spotifyId,
     accessToken,
     refreshToken,
     currentVibe,
+    queueOn: false,
   });
   return user;
 }
 
-export async function setQueueState(userId: string, isOn: boolean) {
-  const user = await User.findByIdAndUpdate(userId, {
-    isOn,
+export async function setQueueState(userId: string, queueOn: boolean) {
+  await User.findByIdAndUpdate(userId, {
+    queueOn,
   });
-  return user;
 }
 
 export async function setPlayerState(id: string, player: object | null) {
-  const user = await User.findByIdAndUpdate(id, {
+  await User.findByIdAndUpdate(id, {
     player,
   });
-  return user;
 }
 
-export async function setToken(id: string, aToken: string) {
+export async function setToken(
+  id: string,
+  aToken: string,
+): Promise<IUser | null> {
   const user = await User.findByIdAndUpdate(id, {
     accessToken: aToken,
   });
@@ -85,16 +91,16 @@ export async function setToken(id: string, aToken: string) {
 }
 
 export async function setDeviceId(id: string, deviceId: string) {
-  const user = await User.findByIdAndUpdate(id, {
+  await User.findByIdAndUpdate(id, {
     deviceId,
   });
-  return user;
 }
 
-export async function getActiveHosts() {
+export async function getActiveHosts(): Promise<IUser[]> {
   const users = await User.find(
     {
       spotifyId: { $exists: true },
+      queueOn: true,
     },
     "name id",
   );
@@ -102,21 +108,19 @@ export async function getActiveHosts() {
 }
 
 export async function addTokens(userId: string, tokens: number) {
-  const user = await User.findByIdAndUpdate(userId, {
+  await User.findByIdAndUpdate(userId, {
     $inc: { tokens },
   });
-  return user;
 }
 
 export async function setVibe(userId: string, vibeId: string) {
-  const user = await User.findByIdAndUpdate(userId, {
+  await User.findByIdAndUpdate(userId, {
     currentVibe: vibeId,
   });
-  return user;
 }
 
-export function setPlaylistId(userId: string, playlistId: string) {
-  return User.findByIdAndUpdate(userId, {
+export async function setPlaylistId(userId: string, playlistId: string) {
+  await User.findByIdAndUpdate(userId, {
     playlistId,
   });
 }
