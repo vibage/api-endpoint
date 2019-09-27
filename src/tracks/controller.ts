@@ -214,6 +214,8 @@ export async function resumeQueue(host: IHost) {
 // async function addPlaylistToQueue(host: IHost, playlistId: string) {}
 
 export async function setPlayerState(host: IHost, player: object | null) {
+  log.info(`Setting player state ${player}`);
+
   io.to(host._id).emit("player", player);
 
   await UserModel.setPlayerState(host._id, player);
