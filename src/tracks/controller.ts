@@ -60,6 +60,9 @@ export async function addTrack(user: IUser, hostId: string, trackId: string) {
   // add track to database
   const track = await TrackModel.addTrack(hostId, trackData, user._id);
 
+  // automatically like song
+  await likeTrack(user, hostId, track.id, false);
+
   // check if queue is empty and the default playlist not playing
   // if this is true then play the added song
   const tracks = await TrackModel.getTracks(hostId);
@@ -67,8 +70,14 @@ export async function addTrack(user: IUser, hostId: string, trackId: string) {
     nextTrack(host);
   }
 
-  // automatically like song
-  await likeTrack(user, hostId, track.id, false);
+  // if the queue is waiting for songs play next song no matter what
+  if (host.queueWaitingForSong) {
+    UserModel.setQueueWaitingForSong(host._id, false);
+    nextTrack(host);
+  }
+
+
+
 
   // send tracks via socket
   io.to(hostId).emit("tracks", tracks);
@@ -279,6 +288,7 @@ export async function nextTrack(host: IHost) {
 
   if (tracks.length === 0) {
     await setPlayerState(host, null);
+    await UserModel.setQueueWaitingForSong(host._id, true)
     throw new Error("End of Queue");
   }
 

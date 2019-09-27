@@ -13,6 +13,7 @@ const UserSchema: Schema = new Schema({
   spotifyId: String,
   currentVibe: String,
   player: Object,
+  queueWaitingForSong: Boolean,
   playlistId: String,
   deviceId: String,
   tokens: Number,
@@ -123,4 +124,10 @@ export async function setPlaylistId(userId: string, playlistId: string) {
   await User.findByIdAndUpdate(userId, {
     playlistId,
   });
+}
+
+export async function setQueueWaitingForSong(userId: string, state: boolean) {
+  await User.findOneAndUpdate(userId, {
+    queueWaitingForSong: state,
+  })
 }

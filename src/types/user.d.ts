@@ -15,4 +15,5 @@ export interface IHost extends IUser {
   player: IPlayerState;
   playlistId: string;
   deviceId: string;
+  queueWaitingForSong: boolean;
 }
