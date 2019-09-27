@@ -61,10 +61,9 @@ export async function addTrack(user: IUser, hostId: string, trackId: string) {
   const track = await TrackModel.addTrack(hostId, trackData, user._id);
 
   // check if queue is empty and the default playlist not playing
-  // if this is true then go ahead and play the added song
+  // if this is true then play the added song
   const tracks = await TrackModel.getTracks(hostId);
   if (tracks.length === 1 && host.player === null) {
-    console.log("Added track");
     nextTrack(host);
   }
 
@@ -72,7 +71,7 @@ export async function addTrack(user: IUser, hostId: string, trackId: string) {
   await likeTrack(user, hostId, track.id, false);
 
   // send tracks via socket
-  await sendAllTracks(hostId);
+  io.to(hostId).emit("tracks", tracks);
 
   return {
     action: "DTK",

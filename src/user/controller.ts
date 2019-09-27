@@ -58,6 +58,7 @@ export async function getUserById(userId: string) {
 }
 
 export async function getActiveHosts() {
+  log.info("Getting active host");
   return UserModel.getActiveHosts();
 }
 
