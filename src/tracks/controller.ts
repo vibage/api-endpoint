@@ -276,6 +276,7 @@ export async function nextTrack(host: IHost) {
   const tracks = await getTracks(host._id);
 
   if (tracks.length === 0) {
+    await setPlayerState(host, null);
     throw new Error("End of Queue");
   }
 
